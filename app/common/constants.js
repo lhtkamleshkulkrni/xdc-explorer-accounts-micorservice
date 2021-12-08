@@ -58,7 +58,7 @@ export const stringConstants = {
   SERVICE_STATUS_HTML:
     '<body style="font-family: Helvetica !important; background-color: black">' +
     '<div style="display: flex; flex:1; height: 100% ; justify-content: center; align-items: center; min-height: 100vh !important; font-size: 24px !important; color: #605DFF !important;">' +
-    '⚡ Template 🔋 MicroService is working fine</div></body>'
+    '⚡ Account 🔋 MicroService is working fine</div></body>'
 }
 
 export const genericConstants = {
@@ -66,7 +66,9 @@ export const genericConstants = {
 }
 
 export const apiSuccessMessage = {
-  FETCH_SUCCESS: 'Information fetched successfully'
+  FETCH_SUCCESS: 'Information fetched successfully',
+  TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY: 'Total Accounts fetched successfully',
+  TOTAL_TOKENS_FETCH_SUCCESSFULLY: 'Total Tokens fetched successfully'
 }
 
 export const apiEndpoints = {
