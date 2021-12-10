@@ -97,6 +97,29 @@ export default class ContractManager {
         };
     }
 
+    async getContractSearch(res) {
+        Utils.lhtLog("ContractManager:getContractSearch", "getContractSearch", res, "");
+        let skip = 0
+        let limit = 0
+        let keywords = ''
+        if(res.skip){
+            skip = parseInt(res.skip)
+        }
+        if(res.limit){
+            limit = parseInt(res.limit)
+        }
+        if(res.keywords){
+            keywords = res.keywords
+        }
+            const totalResult = await ContractModel.countData( { $or: [ { address: { $regex : ".*" + keywords + ".*", $options: 'i' } },
+                { tokenName: { $regex : ".*" + keywords + ".*", $options: 'i' } } ] }
+                 )            
+
+            const datas = await ContractModel.getContractList( { $or: [ { address: { $regex : ".*" + keywords + ".*", $options: 'i' } },
+                { tokenName: { $regex : ".*" + keywords + ".*", $options: 'i' } } ] },"",skip,limit)
+            return {"response":datas , "totalRecord":totalResult}
+    }
+
     async getListOfHoldersForToken(req) {
         Utils.lhtLog("ContractManager:getListOfHoldersForToken", "getListOfHoldersForToken", "", "");
         let findObj = {

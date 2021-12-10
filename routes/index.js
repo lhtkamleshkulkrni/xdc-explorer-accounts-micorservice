@@ -37,6 +37,8 @@ module.exports = (app) => {
     app.get("/getTotalContracts", new ContractController().getTotalContracts)
     app.get("/getListOfContracts", ValidationManger.validateLatestAccounts, new ContractController().getListOfContracts);
     app.get("/getContractDetailsUsingAddress/:contractAddress", ValidationManger.validateContractAddress, new ContractController().getContractDetailsUsingAddress);
+    app.get("/getContractSearch", ValidationManger.validateContractAddress, new ContractController().getContractSearch);
+
 
 
     /*

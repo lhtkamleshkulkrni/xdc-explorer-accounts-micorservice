@@ -53,6 +53,16 @@ export default class ContractController{
         return Utils.response(response, contractDetailsUsingAddressResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
 
+    async getContractSearch(request,response){
+        Utils.lhtLog("ContractController:getContractSearch", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
+        let [error, getContractSearchResponse] = await Utils.parseResponse(new ContractManager().getContractSearch(request.query));
+        if (error) {
+            Utils.lhtLog("ContractController:getContractSearch", "getContractSearch err", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, getContractSearchResponse, apiSuccessMessage.SEARCH_SUCCESSFULL, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
+
     async getListOfHoldersForToken(request,response){
         Utils.lhtLog("ContractController:getListOfHoldersForToken", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
         let [error, listOfHoldersResponse] = await Utils.parseResponse(new ContractManager().getListOfHoldersForToken(request));

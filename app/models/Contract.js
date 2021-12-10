@@ -47,5 +47,8 @@ ContractSchema.static({
     bulkUpsert: function (bulkOps) {
         return this.bulkWrite(bulkOps);
     },
+    countData:  function (findObj) {
+        return this.count(findObj);
+    }
 });
 module.exports = mongoose.model("xin-contract", ContractSchema);
