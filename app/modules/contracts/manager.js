@@ -26,11 +26,13 @@ export default class ContractManager {
             symbol: 1,
             sourceCode: 1,
             compilerVersion: 1,
-            abi: 1
+            abi: 1,
+            totalSupply: 1
         }, parseInt(req.skip), parseInt(req.limit), {_id: -1});
         const resultArray = []
         for (let v of resultSet) {
             let holderCount = await TokenHolderModel.countDocuments({tokenContract: v.address});
+            // console.log('h----',v)
             if (v.abi != '' && v.sourceCode != '' && v.compilerVersion != '') {
                 resultArray.push({
                     "_id": v._id,
@@ -39,6 +41,7 @@ export default class ContractManager {
                     "symbol": v.symbol,
                     "type": "XRC20",
                     "status": "verified",
+                    "totalSupply": v.totalSupply,
                     "tokenHolders": holderCount
                 })
             } else {
@@ -49,6 +52,7 @@ export default class ContractManager {
                     "symbol": v.symbol,
                     "type": "XRC20",
                     "status": "unverified",
+                    "totalSupply": v.totalSupply,
                     "tokenHolders": holderCount
                 })
             }
