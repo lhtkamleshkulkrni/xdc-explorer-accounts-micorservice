@@ -4,6 +4,7 @@ let Schema = mongoose.Schema;
 const HistoricalAccountSchema = new Schema({
     day: { type: String, default: Date.now() },
     accountCount: { type: Number, default: 0 },
+    timestamp: { type: Number, default: 0 },
     createdOn: { type: Number, default: Date.now() },
     modifiedOn: { type: Number, default: Date.now() },
     isActive: { type: Boolean, default: true },

@@ -31,6 +31,6 @@ export default class AccountManager {
 
     async getSomeDaysAccounts(days) {
         Utils.lhtLog("AccountManager:getSomeDaysAccounts", "getSomeDaysAccounts", days, "");
-            return await HistoricalAccountModel.getHistoricalDataList({}, "", 0, parseInt(days), { _id: -1 });
+            return await HistoricalAccountModel.getHistoricalDataList({}, "", 0, parseInt(days), { timestamp: 1  });
     }
 }
