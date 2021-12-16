@@ -1,13 +1,15 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "xinfin-explorer-rest-api-prod",
-    "version": "2021-12-13T07:06:36Z",
-    "title": "xdc-explorer-mainnet"
+    "version": "1.0",
+    "title": "XDC Explorer Mainnet",
+    "description": "MicroService to XDC Explorer",
+    "license": {
+      "name": "Leewayhertz",
+      "url": "http://leewayhertz.com"
+    }
   },
-  "host": "1lzur2qul1.execute-api.us-east-2.amazonaws.com",
-  "basePath": "/prod",
-  "schemes": [
+    "schemes": [
     "https"
   ],
   "paths": {
