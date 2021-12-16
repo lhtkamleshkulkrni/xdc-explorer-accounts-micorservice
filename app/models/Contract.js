@@ -4,7 +4,6 @@ let Schema = mongoose.Schema;
 const ContractSchema = new Schema({
     address: { type: String, default: "" },
     blockNumber: { type: Number, default: 0 },
-    status: { type: String, default: "Unverified" },
     ERC: { type: Number, index: true },
     creationTransaction: { type: String, default: "" },
     contractName: { type: String, default: "" },
@@ -13,6 +12,9 @@ const ContractSchema = new Schema({
     owner: { type: String, default: "" },
     decimals: { type: Number, default: "" },
     totalSupply: { type: Number, default: "" },
+    compilerVersion: { type: String, default: "" },
+    optimization: { type: Boolean, default: false },
+    sourceCode: { type: String, default: "" },
     abi: { type: String, default: "" },
     byteCode: { type: String, default: "" },
     createdOn: { type: Number, default: Date.now() },
