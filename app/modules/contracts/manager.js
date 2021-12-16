@@ -87,17 +87,17 @@ export default class ContractManager {
         Utils.lhtLog("ContractManager:contractDetailsUsingAddressResponse", "contractDetailsUsingAddressResponse", req, "");
         let contractResponse = await ContractModel.getContract({address: req.contractAddress});
         let response = {};
-        let status = 'Unverified';
+        let contractStatus = 'Unverified';
         if (!contractResponse) {
             return response
         }
         if ((contractResponse.sourceCode != "" || contractResponse.sourceCode != null) && (contractResponse.abi != "" || contractResponse.abi != null) && (contractResponse.byteCode != "" || contractResponse.byteCode != null)) {
-            status = "Verified"
+            contractStatus = "Unverified"
         } else {
-            status = "Unverified"
+            contractStatus = "Verified"
         }
         return {
-            contractResponse, status
+            contractResponse, contractStatus
         };
     }
 
