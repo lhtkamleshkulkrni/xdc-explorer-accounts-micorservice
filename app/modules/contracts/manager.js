@@ -91,7 +91,8 @@ export default class ContractManager {
         if (!contractResponse) {
             return response
         }
-        if ((contractResponse.sourceCode != "" || contractResponse.sourceCode != null) && (contractResponse.abi != "" || contractResponse.abi != null) && (contractResponse.byteCode != "" || contractResponse.byteCode != null)) {
+        contractResponse =contractResponse.toJSON()
+        if (contractResponse.sourceCode && contractResponse.abi && contractResponse.byteCode) {
             contractStatus = "Verified"
         } else {
             contractStatus = "Unverified"
