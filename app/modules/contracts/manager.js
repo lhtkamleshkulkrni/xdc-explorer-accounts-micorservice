@@ -92,9 +92,9 @@ export default class ContractManager {
             return response
         }
         if ((contractResponse.sourceCode != "" || contractResponse.sourceCode != null) && (contractResponse.abi != "" || contractResponse.abi != null) && (contractResponse.byteCode != "" || contractResponse.byteCode != null)) {
-            contractStatus = "Unverified"
-        } else {
             contractStatus = "Verified"
+        } else {
+            contractStatus = "Unverified"
         }
         return {
             contractResponse, contractStatus
