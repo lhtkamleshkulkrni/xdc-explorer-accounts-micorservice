@@ -5,11 +5,19 @@ import * as ValidationManger from "../middleware/validation";
 import TestModule from "../app/modules/testModule";
 import AccountController from "../app/modules/accounts";
 import ContractController from "../app/modules/contracts";
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../config/swagger.json';
 import {stringConstants} from "../app/common/constants";
 
 module.exports = (app) => {
     app.get('/', (req, res) => res.send(stringConstants.SERVICE_STATUS_HTML));
 
+    /**
+     * create swagger UI
+     * **/
+     app.use('/swagger-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+    
     /**
      * route definition
      */
