@@ -27,6 +27,7 @@
     "nodemon": "^1.19.2",
     "path": "^0.12.7",
     "request": "^2.88.2",
+    "swagger-ui-express": "^4.3.0",
     "yup": "^0.29.3"
   }
 }

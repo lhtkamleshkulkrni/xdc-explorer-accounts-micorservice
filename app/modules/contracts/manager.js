@@ -162,6 +162,7 @@ export default class ContractManager {
 
     async someDaysHolders(req) {
         Utils.lhtLog("ContractManager:someDaysHolders", "", "", "");
+        let numberOfDays= Number(req.params.numberOfDays);
         let endTime = parseInt(moment().valueOf() / 1000);
         let startTime = parseInt(moment().subtract(req.params.numberOfDays, "days").valueOf() / 1000);
 
@@ -228,9 +229,17 @@ export default class ContractManager {
             ])
 
         const resultArray = []
+        if(responseHolder.length>0)
         responseHolder.map((item) => {
             resultArray.push({"date": item.date, "count": (item.toCount + item.fromCount)})
         });
+        else{
+        for (let index = 0; index < numberOfDays; index++) {
+            let startTime = parseInt(moment().subtract(index, "days").valueOf() / 1000);
+               resultArray.push({"date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0})
+   
+        }
+    }
 
         return resultArray
     }
