@@ -234,7 +234,7 @@ export default class ContractManager {
             resultArray.push({"date": item.date, "count": (item.toCount + item.fromCount)})
         });
         else{
-        for (let index = 0; index < numberOfDays; index++) {
+        for (let index = numberOfDays; index > 0; index--) {
             let startTime = parseInt(moment().subtract(index, "days").valueOf() / 1000);
                resultArray.push({"date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0})
    
