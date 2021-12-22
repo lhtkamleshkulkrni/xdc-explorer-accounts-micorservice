@@ -332,7 +332,7 @@ export default class ContractManager {
                     {$limit: limit},
                     {
                         $project: {
-                            _id: 1, address: 1, "type": "XRC20", tokenName: 1, tokenHolders: {$size: "$tokenholders"},
+                            _id: 1, address: 1, "type": "XRC20", tokenName: 1, tokenHolders: {$size: "$tokenholders"},totalSupply:1,symbol:1,decimals:1,
                             status: {$cond: {if: {$gte: ["$tokenStatus", 3]}, then: "verified", else: "unverified"}}
                         }
                     }
