@@ -18,7 +18,7 @@ module.exports = {
   },
   validateSomeDayAccounts: async (req, res, next) => {
     const schema = yup.object().shape({
-      numberOfDays: yup.string().required(),
+      numberOfDays: yup.string().required().max(18)
     });
     await validate(schema, req.params, res, next);
   },
