@@ -12,14 +12,17 @@ export default class Manger {
     if (!contractDetail) {
       throw `No such contract found`;
     }
+    const startTime = requestData.from / 1000;
+    if (requestData.type == "all") {
+      startTime = Math.round(contractDetail.createdOn / 1000);
+      requestData.from = contractDetail.createdOn;
+    }
+
     let response = await Transfer.getTokenList({
       $and: [
         {
           timestamp: {
-            $gte:
-              requestData.type == "all"
-                ? Math.round(contractDetail.createdOn / 1000)
-                : requestData.from / 1000,
+            $gte: startTime,
           },
         },
         {
@@ -46,17 +49,21 @@ export default class Manger {
     if (response && response.length) {
       let period = moment(requestData.to).diff(
         moment(requestData.from),
-        "month"
+        "days"
       );
       for (let index = 0; index < period; index++) {
         let fromAmount = 0,
+          filtered = [],
           toAmount = 0;
-        const filtered = response.filter((item) => {
-          item.timestamp = item.timestamp * 1000;
+        response.map((item, ind) => {
           if (getTimeCondition(item, requestData, index)) {
-            return item;
+            filtered.push(item);
+            // response.splice(ind, 1);
           }
         });
+        if (!filtered || !filtered.length) {
+          continue;
+        }
         filtered.map((transaction) => {
           transaction = transaction._doc;
           if (transaction.from == requestData.walletAddress) {
@@ -90,9 +97,10 @@ export default class Manger {
 
 function getTimeCondition(item, requestData, index) {
   return (
-    moment(requestData.from).add(index, "days").startOf("day").valueOf() <=
+    moment(requestData.from).add(index, "days").startOf("day").valueOf() /
+      1000 <=
       item.timestamp &&
     item.timestamp <=
-      moment(requestData.to).add(index, "days").endOf("day").valueOf()
+      moment(requestData.to).add(index, "days").endOf("day").valueOf() / 1000
   );
 }
