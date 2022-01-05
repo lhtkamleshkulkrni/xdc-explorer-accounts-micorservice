@@ -8,6 +8,7 @@ import ContractController from "../app/modules/contracts";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../config/swagger.json";
 import { stringConstants } from "../app/common/constants";
+import JobController from "../app/modules/jobs";
 
 module.exports = (app) => {
   app.get("/", (req, res) => res.send(stringConstants.SERVICE_STATUS_HTML));
@@ -101,5 +102,12 @@ module.exports = (app) => {
     "/get-token-balance",
     ValidationManger.validateGetTokeBalance,
     new AnalyticsController().getTokenBalance
+  );
+
+  app.get("/get-token-overview", JobController.generateTokenAnalytics);
+  app.post(
+    "/get-token-transfer-count",
+    ValidationManger.validateGetTokeBalance,
+    new AnalyticsController().getTokenTransferCount
   );
 };
