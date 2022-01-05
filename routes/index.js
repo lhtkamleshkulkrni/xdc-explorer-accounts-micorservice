@@ -104,10 +104,19 @@ module.exports = (app) => {
     new AnalyticsController().getTokenBalance
   );
 
-  app.get("/get-token-overview", JobController.generateTokenAnalytics);
+  app.post(
+    "/get-token-overview",
+    ValidationManger.validateGetTokenOveview,
+    new AnalyticsController().getTokenOverview
+  );
   app.post(
     "/get-token-transfer-count",
     ValidationManger.validateGetTokeBalance,
     new AnalyticsController().getTokenTransferCount
+  );
+  app.post(
+    "/get-history-price",
+    ValidationManger.validateGetTokenOveview,
+    new AnalyticsController().getHistoryPrice
   );
 };

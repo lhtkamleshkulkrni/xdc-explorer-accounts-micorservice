@@ -53,6 +53,14 @@ module.exports = {
     });
     await validate(schema, req.body, res, next);
   },
+  validateGetTokenOveview: async (req, res, next) => {
+    const schema = yup.object().shape({
+      tokenAddress: yup.string().required(),
+      startTime: yup.number().required(),
+      endTime: yup.number().required(),
+    });
+    await validate(schema, req.body, res, next);
+  },
 };
 
 const validate = async (schema, reqData, res, next) => {

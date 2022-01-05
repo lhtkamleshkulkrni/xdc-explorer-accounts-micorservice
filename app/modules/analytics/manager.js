@@ -1,9 +1,10 @@
 import moment from "moment";
 import Contract from "../../models/Contract";
 import Transfer from "../../models/Transfer";
+import TokenAnalytics from "../../models/tokenAnalytics";
+import HistoryPrice from "../../models/tokenAnalytics";
 import Web3 from "xdc3";
 import Config from "../../../config";
-import Utility from "../../utils";
 
 export default class Manger {
   getTokenBalance = async (requestData) => {
@@ -223,4 +224,50 @@ export default class Manger {
       response,
     };
   }
+
+  getTokenOverview = async (requestData) => {
+    // let requestData = {
+    //   tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
+    //   startTime: moment().startOf("day").valueOf(),
+    //   endTime: moment().endOf("day").valueOf(),
+    // };
+    return TokenAnalytics.getTokenAnalyticsList({
+      $and: [
+        {
+          addedOn: {
+            $gte: requestData.startTime,
+          },
+        },
+        {
+          addedOn: {
+            $lte: requestData.endTime,
+          },
+        },
+      ],
+      tokenAddress: requestData.tokenAddress,
+    });
+  };
+
+  getHistoryPrice = async (requestData) => {
+    // let requestData = {
+    //   tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
+    //   startTime: moment().startOf("day").valueOf(),
+    //   endTime: moment().endOf("day").valueOf(),
+    // };
+    return HistoryPrice.getHistoryPriceList({
+      $and: [
+        {
+          addedOn: {
+            $gte: requestData.startTime,
+          },
+        },
+        {
+          addedOn: {
+            $lte: requestData.endTime,
+          },
+        },
+      ],
+      tokenAddress: requestData.tokenAddress,
+    });
+  };
 }
