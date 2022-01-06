@@ -27,7 +27,8 @@ export default class ContractManager {
             sourceCode: 1,
             compilerVersion: 1,
             abi: 1,
-            totalSupply: 1
+            totalSupply: 1,
+            decimals:1
         }, parseInt(req.skip), parseInt(req.limit), {_id: -1});
         const resultArray = []
         for (let v of resultSet) {
@@ -42,7 +43,8 @@ export default class ContractManager {
                     "type": "XRC20",
                     "status": "verified",
                     "totalSupply": v.totalSupply,
-                    "tokenHolders": holderCount
+                    "tokenHolders": holderCount,
+                    decimals:v.decimals
                 })
             } else {
                 resultArray.push({
@@ -53,7 +55,8 @@ export default class ContractManager {
                     "type": "XRC20",
                     "status": "unverified",
                     "totalSupply": v.totalSupply,
-                    "tokenHolders": holderCount
+                    "tokenHolders": holderCount,
+                    decimals:v.decimals
                 })
             }
         }
@@ -329,7 +332,7 @@ export default class ContractManager {
                     {$limit: limit},
                     {
                         $project: {
-                            _id: 1, address: 1, "type": "XRC20", tokenName: 1, tokenHolders: {$size: "$tokenholders"},
+                            _id: 1, address: 1, "type": "XRC20", tokenName: 1, tokenHolders: {$size: "$tokenholders"},totalSupply:1,symbol:1,decimals:1,
                             status: {$cond: {if: {$gte: ["$tokenStatus", 3]}, then: "verified", else: "unverified"}}
                         }
                     }
