@@ -15,8 +15,15 @@ export default class AccountManager {
 
     async getLatestAccounts(req) {
         Utils.lhtLog("AccountManager:getLatestAccounts", "getLatestAccounts", req, "");
+        let   sortKey = "balance",
+        sortType = -1;
+        if (req && req.sortKey)
+        sortKey = req.sortKey;
+        if (req && req.sortType)
+        sortType = parseInt(req.sortType);
+
         if (!req.keywords)
-            return await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {"balance": -1});
+            return await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {[sortKey]: sortType});
         Utils.lhtLog("AccountManager:getLatestAccounts", "getLatestAccounts", {
             address: {
                 $regex: ".*" + req.keywords + ".*"
@@ -26,7 +33,7 @@ export default class AccountManager {
             address: {
                 $regex: ".*" + req.keywords + ".*"
             }
-        }, "", parseInt(req.skip), parseInt(req.limit), {"balance": -1});
+        }, "", parseInt(req.skip), parseInt(req.limit), {[sortKey]: sortType});
     }
 
     async getSomeDaysAccounts(days) {
