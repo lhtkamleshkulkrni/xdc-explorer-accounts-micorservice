@@ -248,12 +248,12 @@ export default class Manger {
     });
   };
 
-  getHistoryPrice = async () => {
-    let requestData = {
-      tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
-      startTime: moment().startOf("month").valueOf(),
-      endTime: moment().endOf("month").valueOf(),
-    };
+  getHistoryPrice = async (requestData) => {
+    // let requestData = {
+    //   tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
+    //   startTime: moment().startOf("month").valueOf(),
+    //   endTime: moment().endOf("month").valueOf(),
+    // };
     return HistoryPrice.getHistoryPriceDataList({
       $and: [
         {
