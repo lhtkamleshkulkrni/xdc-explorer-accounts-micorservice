@@ -114,9 +114,9 @@ module.exports = (app) => {
     ValidationManger.validateGetTokeBalance,
     new AnalyticsController().getTokenTransferCount
   );
-  app.post(
+  app.get(
     "/get-history-price",
-    ValidationManger.validateGetTokenOveview,
+    // ValidationManger.validateGetTokenOveview,
     new AnalyticsController().getHistoryPrice
   );
 };
