@@ -1,6 +1,7 @@
 import Transfer from "../../models/Transfer";
 import Contract from "../../models/Contract";
 import TokenAnalytics from "../../models/tokenAnalytics";
+import HistoryPrice from "../../models/historyPrice";
 import Config from "../../../config";
 import moment from "moment";
 import HTTPService from "../../service/http-service";
@@ -29,9 +30,29 @@ export default class BLManager {
     await TokenAnalytics.bulkWrite(analyticsData);
     return true;
   }
+
+  async syncHistoryPriceData() {
+    let contracts = await Contract.find({
+      symbol: { $exists: true },
+      isActive: true,
+      isDeleted: false,
+    });
+    if (!contracts || !contracts.length) {
+      return true;
+    }
+    let historyPriceData = await getHistoryPriceData(contracts);
+    if (!historyPriceData || !historyPriceData.length) {
+      return true;
+    }
+    await HistoryPrice.bulkWrite(historyPriceData);
+    return true;
+  }
 }
 
 async function generateAnalyticsData(responseData, startTime) {
+  if (!responseData || !responseData.length) {
+    return [];
+  }
   let data = [];
   for (const element of responseData) {
     let contractDetails = await Contract.getContract({ address: element._id });
@@ -145,7 +166,7 @@ async function getMarketCapData(symbol) {
       continue;
     }
 
-    const URL = `${Config.COIN_MARKET_API_URL}?symbol=${symbol}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&convert=${conversions[index]}`;
+    const URL = `${Config.COIN_MARKET_API_URL}/latest?symbol=${symbol}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&convert=${conversions[index]}`;
     let response = await HTTPService.executeHTTPRequest(
       httpConstants.METHOD_TYPE.GET,
       URL,
@@ -168,4 +189,103 @@ async function getMarketCapData(symbol) {
   }
   return coinMarketData;
 }
+
+async function getHistoryPriceData(contracts) {
+  const startTime = moment().subtract(1, "day").startOf("day").valueOf();
+  const endTime = Math.round(
+    moment().subtract(1, "day").endOf("day").valueOf() / 1000
+  );
+  let data = [];
+  for (let index = 0; index < contracts.length; index++) {
+    const selectedContract = contracts[index];
+    if (!selectedContract.symbol) {
+      continue;
+    }
+    // https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical?symbol=ECOIN&CMC_PRO_API_KEY=cb190bb3-b61a-4d83-8559-374edbfb27b3&time_start=1641254400&time_end=1641254400
+    const URL = `${Config.COIN_MARKET_API_URL}/historical?symbol=${
+      selectedContract.symbol
+    }&CMC_PRO_API_KEY=${Config.CMC_API_KEY}}&time_start=${
+      startTime / 1000
+    }&time_end=${endTime}`;
+    let response = await HTTPService.executeHTTPRequest(
+      httpConstants.METHOD_TYPE.GET,
+      URL,
+      "",
+      {},
+      {
+        "Content-Type": httpConstants.HEADER_TYPE.APPLICATION_JSON,
+      }
+    );
+    if (
+      !response ||
+      !response.status ||
+      response.status.error_message ||
+      !response.data.quotes ||
+      !response.data.quotes.length
+    ) {
+      continue;
+    }
+    const currentDateData =
+      response.data.quotes[response.data.quotes.length - 1];
+    const USDData = currentDateData.quote.USD;
+    data.push({
+      updateOne: {
+        filter: {
+          timestamp: startTime,
+          tokenAddress: contracts[index].address,
+        },
+        update: {
+          tokenAddress: contracts[index].address,
+          openingTime: moment(currentDateData.time_open).valueOf(),
+          closingTime: moment(currentDateData.time_close).valueOf(),
+          highValueTime: moment(currentDateData.time_high).valueOf(),
+          lowValueTime: moment(currentDateData.time_low).valueOf(),
+          openingPrice: USDData.open,
+          highestPrice: USDData.high,
+          lowestPrice: USDData.low,
+          closingPrice: USDData.close,
+          volume: USDData.volume,
+          marketCap: USDData.market_data,
+          timestamp: moment(currentDateData.timestamp).valueOf(),
+        },
+      },
+    });
+  }
+  return data;
+}
+
 // &convert=INR
+
+// let data = {
+//   data: {
+//     id: 1,
+//     name: "Bitcoin",
+//     symbol: "BTC",
+//     quotes: [
+//       {
+//         time_open: "2019-01-03T00:00:00.000Z",
+//         time_close: "2019-01-03T23:59:59.999Z",
+//         time_high: "2019-01-02T03:53:00.000Z",
+//         time_low: "2019-01-02T02:43:00.000Z",
+//         quote: {
+//           USD: {
+//             open: 3931.04863841,
+//             high: 3935.68513083,
+//             low: 3826.22287069,
+//             close: 3836.74131867,
+//             volume: 4530215218.84018,
+//             market_cap: 66994920902.7202,
+//             timestamp: "2019-01-03T23:59:59.999Z",
+//           },
+//         },
+//       },
+//     ],
+//   },
+//   status: {
+//     timestamp: "2022-01-04T04:45:08.158Z",
+//     error_code: 0,
+//     error_message: "",
+//     elapsed: 10,
+//     credit_count: 1,
+//   },
+// };

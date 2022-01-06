@@ -2,7 +2,7 @@ import moment from "moment";
 import Contract from "../../models/Contract";
 import Transfer from "../../models/Transfer";
 import TokenAnalytics from "../../models/tokenAnalytics";
-import HistoryPrice from "../../models/tokenAnalytics";
+import HistoryPrice from "../../models/historyPrice";
 import Web3 from "xdc3";
 import Config from "../../../config";
 
@@ -248,21 +248,21 @@ export default class Manger {
     });
   };
 
-  getHistoryPrice = async (requestData) => {
-    // let requestData = {
-    //   tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
-    //   startTime: moment().startOf("day").valueOf(),
-    //   endTime: moment().endOf("day").valueOf(),
-    // };
-    return HistoryPrice.getHistoryPriceList({
+  getHistoryPrice = async () => {
+    let requestData = {
+      tokenAddress: "xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1",
+      startTime: moment().startOf("month").valueOf(),
+      endTime: moment().endOf("month").valueOf(),
+    };
+    return HistoryPrice.getHistoryPriceDataList({
       $and: [
         {
-          addedOn: {
+          timestamp: {
             $gte: requestData.startTime,
           },
         },
         {
-          addedOn: {
+          timestamp: {
             $lte: requestData.endTime,
           },
         },
