@@ -9,8 +9,8 @@ const TokenAnalytics = new Schema({
   totalTransferTokens: { type: Number, default: 0 },
   tokenBalance: { type: Number, default: 0 },
 
-  uniqueSender: { type: Number, default: 0 },
-  uniqueReceiver: { type: Number, default: 0 },
+  uniqueSenders: { type: Number, default: 0 },
+  uniqueReceivers: { type: Number, default: 0 },
   uniqueAddress: { type: Number, default: 0 },
 
   addedOn: { type: Number, default: Date.now() },
