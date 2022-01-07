@@ -69,11 +69,11 @@ async function generateAnalyticsData(responseData, startTime) {
       const amount = !isNaN(Number(doc.value)) ? Number(doc.value) : 0;
       if (doc.from == element._id) {
         let recieverIndex = uniqueReceivers.findIndex(
-          (item) => item.reciever == doc.from
+          (item) => item.reciever == doc.to
         );
         if (recieverIndex === -1) {
           uniqueReceivers.push({
-            reciever: doc.from,
+            reciever: doc.to,
             amount,
           });
         } else {
@@ -88,11 +88,11 @@ async function generateAnalyticsData(responseData, startTime) {
         sentAmount += amount;
       } else {
         let senderIndex = uniqueSenders.findIndex(
-          (item) => item.sender == doc.to
+          (item) => item.sender == doc.from
         );
         if (senderIndex === -1) {
           uniqueSenders.push({
-            sender: doc.to,
+            sender: doc.from,
             amount,
           });
         } else {
