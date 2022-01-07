@@ -131,7 +131,12 @@ async function generateAnalyticsData(responseData, startTime) {
   return data;
 }
 
-function updateUniqueAddress(uniqueAddress, amount, address, isRecieved) {
+export function updateUniqueAddress(
+  uniqueAddress,
+  amount,
+  address,
+  isRecieved
+) {
   let uniqueAdreesIndex = uniqueAddress.findIndex(
     (item) => item.address == address
   );

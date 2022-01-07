@@ -5,7 +5,10 @@ import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
 import Web3 from "xdc3";
 import Config from "../../../config";
-
+import { model, Schema } from "mongoose";
+import { AnalyticsDataType } from "../../common/constants";
+import { updateUniqueAddress } from "../jobs/manager";
+const Transactions = model("xin-transactions", new Schema({}));
 export default class Manger {
   getTokenBalance = async (requestData) => {
     const contractDetail = await Contract.getContract({
@@ -20,28 +23,37 @@ export default class Manger {
       requestData.from = contractDetail.createdOn;
     }
 
-    let response = await Transfer.getTokenList({
-      $and: [
-        {
-          timestamp: {
-            $gte: startTime,
+    let response = await Transfer.getTokenList(
+      {
+        $and: [
+          {
+            timestamp: {
+              $gte: startTime,
+            },
           },
-        },
-        {
-          timestamp: {
-            $lte: requestData.to / 1000,
+          {
+            timestamp: {
+              $lte: requestData.to / 1000,
+            },
           },
-        },
-      ],
-      $or: [
-        {
-          from: requestData.walletAddress,
-        },
-        {
-          to: requestData.walletAddress,
-        },
-      ],
-    });
+        ],
+        $or: [
+          {
+            from: requestData.walletAddress,
+          },
+          {
+            to: requestData.walletAddress,
+          },
+        ],
+      },
+      {
+        timestamp: 1,
+        from: 1,
+        to: 1,
+        contract: 1,
+        value: 1,
+      }
+    );
     let data = [];
     let totalBalance = await this.getBalance(
       requestData.tokenAddress,
@@ -202,7 +214,7 @@ export default class Manger {
     return data;
   };
 
-  filterDataFromStartAndEndTime(request, index, requestData) {
+  filterDataFromStartAndEndTime(request, index, requestData, isDoc = false) {
     const startTimeStamp =
       moment(requestData.from).add(index, "days").startOf("day").valueOf() /
       1000;
@@ -211,6 +223,7 @@ export default class Manger {
     let response = [];
     let filtered = [];
     request.map((data) => {
+      data = isDoc ? data._doc : data;
       if (data.timestamp >= startTimeStamp && data.timestamp <= endTimeStamp) {
         filtered.push(data);
       } else {
@@ -270,4 +283,221 @@ export default class Manger {
       tokenAddress: requestData.tokenAddress,
     });
   };
+
+  getAddressAnalytics = async (requestData) => {
+    const findObj = {
+      $and: [
+        { timestamp: { $gte: requestData.from / 1000 } },
+        { timestamp: { $lte: requestData.to / 1000 } },
+      ],
+      $or: [{ from: requestData.address }, { to: requestData.address }],
+      timestamp: { $exists: true },
+    };
+    if (requestData.type == AnalyticsDataType.XDC_TRANSACTIONS) {
+      return this.getTransactionAnalyticsData(findObj, requestData);
+    }
+    if (requestData.type == AnalyticsDataType.TOKEN_TRANSFER) {
+      return this.getTokenAnalyticsDataForAddress(findObj, requestData);
+    }
+  };
+
+  getTransactionAnalyticsData = async (findObj, requestData) => {
+    let response = await Transactions.find(findObj, {
+      timestamp: 1,
+      from: 1,
+      to: 1,
+      gas: 1,
+      gasPrice: 1,
+      gasPrice: 1,
+      value: 1,
+    });
+    if (!response || !response.length) {
+      return [];
+    }
+    let data = [],
+      totalFeesSpent = 0,
+      isDoc = true,
+      totalFeesUsed = 0;
+    let period = moment(requestData.to).diff(moment(requestData.from), "days");
+    for (let index = 0; index < period; index++) {
+      let receivedAddresses = [],
+        sentAmount = 0,
+        receivedAmount = 0,
+        feesSpent = 0,
+        feesUsed = 0,
+        sentAddresses = [];
+      let filteredData = this.filterDataFromStartAndEndTime(
+        response,
+        index,
+        requestData,
+        isDoc
+      );
+      isDoc = false;
+
+      response = filteredData.response;
+      if (!filteredData.filtered || !filteredData.filtered.length) {
+        continue;
+      }
+      filteredData.filtered.map((transaction) => {
+        const amount = !isNaN(Number(transaction.value))
+          ? Number(transaction.value)
+          : 0;
+
+        if (transaction.from == requestData.address) {
+          feesSpent += !isNaN(Number(transaction.gasPrice))
+            ? Number(transaction.gasPrice)
+            : 0;
+          sentAmount += amount;
+          if (
+            sentAddresses.findIndex((item) => item.address == transaction.to) ==
+            -1
+          )
+            sentAddresses.push({ address: transaction.to });
+          totalFeesSpent += feesSpent;
+        } else {
+          feesUsed += !isNaN(Number(transaction.gasUsed))
+            ? Number(transaction.gasUsed)
+            : 0;
+          receivedAmount += amount;
+          totalFeesUsed += feesUsed;
+          if (
+            receivedAddresses.findIndex(
+              (item) => item.address == transaction.from
+            ) == -1
+          )
+            receivedAddresses.push({ address: transaction.from });
+        }
+      });
+
+      data.push({
+        date: moment(requestData.from).add(index, "days").valueOf(),
+        sentAmount,
+        receivedAmount,
+        sentAddresses: sentAddresses.length,
+        receivedAddresses: receivedAddresses.length,
+        feesUsed,
+        feesSpent,
+        totalTrasactions: filteredData.filtered.length,
+      });
+    }
+    // return { data, totalFeesSpent, totalFeesUsed };
+    return data;
+  };
+
+  getTokenAnalyticsDataForAddress = async (findObj, requestData) => {
+    let response = await Transfer.getTokenList(findObj, {
+      timestamp: 1,
+      from: 1,
+      to: 1,
+      contract: 1,
+      value: 1,
+    });
+    if (!response || !response.length) {
+      return [];
+    }
+    let data = [];
+    let period = moment(requestData.to).diff(moment(requestData.from), "days");
+    for (let index = 0; index < period; index++) {
+      let sentAmount = 0,
+        receivedAmount = 0,
+        uniqueSenders = [],
+        uniqueAddress = [],
+        inBoundTransfers = 0,
+        outBoundTransfers = 0,
+        contracts = [],
+        uniqueReceivers = [];
+
+      let filteredData = this.filterDataFromStartAndEndTime(
+        response,
+        index,
+        requestData
+      );
+
+      response = filteredData.response;
+      if (!filteredData.filtered || !filteredData.filtered.length) {
+        continue;
+      }
+
+      for (let doc of filteredData.filtered) {
+        const amount = !isNaN(Number(doc.value)) ? Number(doc.value) : 0;
+        contracts = updateContracts(contracts, doc, amount);
+
+        if (doc.from == requestData.address) {
+          const recieverIndex = uniqueReceivers.findIndex(
+            (item) => item.reciever == doc.to
+          );
+          if (recieverIndex === -1) {
+            uniqueReceivers.push({
+              reciever: doc.to,
+              amount,
+            });
+          } else {
+            uniqueReceivers[recieverIndex].amount += amount;
+          }
+          uniqueAddress = updateUniqueAddress(
+            uniqueAddress,
+            -amount,
+            doc.to,
+            false
+          );
+          sentAmount += amount;
+          outBoundTransfers += 1;
+        } else {
+          const senderIndex = uniqueSenders.findIndex(
+            (item) => item.sender == doc.from
+          );
+          if (senderIndex === -1) {
+            uniqueSenders.push({
+              sender: doc.from,
+              amount,
+            });
+          } else {
+            uniqueSenders[senderIndex].amount += amount;
+          }
+
+          uniqueAddress = updateUniqueAddress(
+            uniqueAddress,
+            amount,
+            doc.from,
+            true
+          );
+          receivedAmount += amount;
+          inBoundTransfers += 1;
+        }
+      }
+
+      data.push({
+        transfersCount: filteredData.filtered.length,
+        sentAmount,
+        receivedAmount,
+        inBoundTransfers,
+        outBoundTransfers,
+        contracts,
+        totalTransferTokens: sentAmount + receivedAmount,
+        uniqueSenders: uniqueSenders.length,
+        uniqueReceivers: uniqueReceivers.length,
+        uniqueAddress: uniqueAddress.length,
+        addedOn: moment(requestData.from).add(index, "days").valueOf(),
+      });
+    }
+    return data;
+  };
+}
+
+function updateContracts(contracts, doc, amount) {
+  const contractIndex = contracts.findIndex(
+    (item) => item.contract == doc.contract
+  );
+  const isSent = doc.from == doc.contract;
+  if (contractIndex === -1) {
+    contracts.push({
+      contract: doc.contract,
+      sentAmount: isSent ? amount : 0,
+      recievedAmount: !isSent ? amount : 0,
+    });
+  } else {
+    contracts[contractIndex].sentAmount = isSent ? amount : 0;
+    contracts[contractIndex].recievedAmount = !isSent ? amount : 0;
+  }
+  return contracts;
 }

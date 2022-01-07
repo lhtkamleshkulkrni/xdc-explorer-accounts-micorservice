@@ -119,4 +119,9 @@ module.exports = (app) => {
     ValidationManger.validateGetTokenOveview,
     new AnalyticsController().getHistoryPrice
   );
+  app.post(
+    "/get-address-analytics",
+    ValidationManger.validateGetAddressAnalytics,
+    new AnalyticsController().getAddressAnalytics
+  );
 };
