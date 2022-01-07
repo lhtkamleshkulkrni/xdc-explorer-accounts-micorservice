@@ -1,6 +1,7 @@
 import moment from "moment";
 import Contract from "../../models/Contract";
 import Transfer from "../../models/Transfer";
+import Accounts from "../../models/Account";
 import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
 import Web3 from "xdc3";
@@ -9,6 +10,7 @@ import { model, Schema } from "mongoose";
 import { AnalyticsDataType } from "../../common/constants";
 import { updateUniqueAddress } from "../jobs/manager";
 const Transactions = model("xin-transactions", new Schema({}));
+const CoinMarketExchanges = model("xin-coin-market-exchanges", new Schema({}));
 export default class Manger {
   getTokenBalance = async (requestData) => {
     const contractDetail = await Contract.getContract({
@@ -480,6 +482,126 @@ export default class Manger {
         addedOn: moment(requestData.from).add(index, "days").valueOf(),
       });
     }
+    return data;
+  };
+
+  getAddressBalanceAnalytics = async (requestData) => {
+    let response = await Transactions.find(
+      {
+        $and: [
+          {
+            timestamp: {
+              $gte: requestData.from / 1000,
+            },
+          },
+          {
+            timestamp: {
+              $lte: requestData.to / 1000,
+            },
+          },
+        ],
+        $or: [
+          {
+            from: requestData.address,
+          },
+          {
+            to: requestData.address,
+          },
+        ],
+      },
+      {
+        timestamp: 1,
+        from: 1,
+        to: 1,
+        contract: 1,
+        value: 1,
+      }
+    );
+    if (!response || !response.length) {
+      return [];
+    }
+    let data = [];
+    let totalBalance = await Accounts.getAccountList(
+      { address: requestData.address },
+      { address: 1, balance: 1 }
+    );
+    if (!totalBalance || !totalBalance.length) {
+      return [];
+    }
+    let currentBalance = totalBalance[totalBalance.length - 1].balance,
+      isDoc = true;
+
+    let period = moment(requestData.to).diff(moment(requestData.from), "days");
+    for (let index = 0; index < period; index++) {
+      const startDate = moment(requestData.from)
+        .add(index, "days")
+        .startOf("day")
+        .valueOf();
+      const endDate = moment(requestData.from)
+        .add(index, "days")
+        .endOf("day")
+        .valueOf();
+
+      let fromAmount = 0,
+        toAmount = 0;
+
+      let filteredData = this.filterDataFromStartAndEndTime(
+        response,
+        index,
+        requestData,
+        isDoc
+      );
+      isDoc = false;
+      response = filteredData.response;
+      if (!filteredData.filtered || !filteredData.filtered.length) {
+        continue;
+      }
+      let coinMarketData = await CoinMarketExchanges.find(
+        {
+          symbol: "XDC",
+          fiatValue: requestData.currency,
+          $and: [
+            {
+              lastUpdated: {
+                $gte: startDate / 1000,
+              },
+            },
+            {
+              lastUpdated: {
+                $lte: endDate / 1000,
+              },
+            },
+          ],
+        },
+        { price: 1 }
+      )
+        .sort({ lastUpdated: -1 })
+        .limit(1);
+      if (!coinMarketData || !coinMarketData.length) {
+        continue;
+      }
+      coinMarketData = coinMarketData[coinMarketData.length - 1]._doc;
+      // let currentBalance = coinMarketData.price;
+
+      filteredData.filtered.map((transaction) => {
+        if (transaction.from == requestData.address) {
+          fromAmount += Number(transaction.value);
+        } else {
+          toAmount += Number(transaction.value);
+        }
+      });
+      currentBalance = currentBalance + toAmount - fromAmount;
+      data.push({
+        date: startDate,
+        toAmount,
+        fromAmount,
+        totalDocument: filteredData.filtered.length,
+        totalAmount: toAmount + fromAmount,
+        currentBalance,
+        priceInUSD: coinMarketData.price,
+      });
+    }
+
     return data;
   };
 }

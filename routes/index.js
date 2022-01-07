@@ -124,4 +124,10 @@ module.exports = (app) => {
     ValidationManger.validateGetAddressAnalytics,
     new AnalyticsController().getAddressAnalytics
   );
+
+  app.post(
+    "/get-address-balance-analytics",
+    ValidationManger.validateGetAddressAnalytics,
+    new AnalyticsController().getAddressBalanceAnalytics
+  );
 };
