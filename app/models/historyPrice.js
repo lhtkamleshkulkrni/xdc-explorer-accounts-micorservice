@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const HistoryPriceData = new Schema({
-  tokenAddress: { type: String, default: "" },
+  symbol: { type: String, default: "" },
   openingTime: { type: Number, default: 0 },
   closingTime: { type: Number, default: 0 },
   highValueTime: { type: Number, default: 0 },

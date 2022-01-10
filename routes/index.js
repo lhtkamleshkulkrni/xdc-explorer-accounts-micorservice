@@ -119,4 +119,17 @@ module.exports = (app) => {
     ValidationManger.validateGetTokenOveview,
     new AnalyticsController().getHistoryPrice
   );
+  app.post(
+    "/get-address-analytics",
+    ValidationManger.validateGetAddressAnalytics,
+    new AnalyticsController().getAddressAnalytics
+  );
+
+  app.post(
+    "/get-address-balance-analytics",
+    ValidationManger.validateGetAddressAnalytics,
+    new AnalyticsController().getAddressBalanceAnalytics
+  );
+
+  app.get("/token-info/:symbol", new AnalyticsController().getTokenInfo);
 };

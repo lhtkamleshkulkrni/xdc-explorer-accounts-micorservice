@@ -53,6 +53,14 @@ module.exports = {
     });
     await validate(schema, req.body, res, next);
   },
+  validateGetAddressAnalytics: async (req, res, next) => {
+    const schema = yup.object().shape({
+      address: yup.string().required(),
+      from: yup.number().required(),
+      to: yup.number().required(),
+    });
+    await validate(schema, req.body, res, next);
+  },
   validateGetTokenOveview: async (req, res, next) => {
     const schema = yup.object().shape({
       tokenAddress: yup.string().required(),

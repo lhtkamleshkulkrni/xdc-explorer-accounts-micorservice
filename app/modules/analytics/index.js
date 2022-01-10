@@ -82,4 +82,64 @@ export default class Index {
       return Utils.handleError(error, request, response);
     }
   }
+
+  async getAddressAnalytics(request, response) {
+    try {
+      const [error, getBalanceResponse] = await Utils.parseResponse(
+        new BLManager().getAddressAnalytics(request.body)
+      );
+      if (error) {
+        return Utils.handleError(error, request, response);
+      }
+      return Utils.response(
+        response,
+        getBalanceResponse,
+        apiSuccessMessage.FETCH_SUCCESS,
+        httpConstants.RESPONSE_STATUS.SUCCESS,
+        httpConstants.RESPONSE_CODES.OK
+      );
+    } catch (error) {
+      return Utils.handleError(error, request, response);
+    }
+  }
+
+  async getAddressBalanceAnalytics(request, response) {
+    try {
+      const [error, getBalanceResponse] = await Utils.parseResponse(
+        new BLManager().getAddressBalanceAnalytics(request.body)
+      );
+      if (error) {
+        return Utils.handleError(error, request, response);
+      }
+      return Utils.response(
+        response,
+        getBalanceResponse,
+        apiSuccessMessage.FETCH_SUCCESS,
+        httpConstants.RESPONSE_STATUS.SUCCESS,
+        httpConstants.RESPONSE_CODES.OK
+      );
+    } catch (error) {
+      return Utils.handleError(error, request, response);
+    }
+  }
+
+  async getTokenInfo(request, response) {
+    try {
+      const [error, getBalanceResponse] = await Utils.parseResponse(
+        new BLManager().getTokenInfo(request.params)
+      );
+      if (error) {
+        return Utils.handleError(error, request, response);
+      }
+      return Utils.response(
+        response ? response : {},
+        getBalanceResponse,
+        apiSuccessMessage.FETCH_SUCCESS,
+        httpConstants.RESPONSE_STATUS.SUCCESS,
+        httpConstants.RESPONSE_CODES.OK
+      );
+    } catch (error) {
+      return Utils.handleError(error, request, response);
+    }
+  }
 }

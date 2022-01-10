@@ -1,7 +1,7 @@
 import Utils from "../utils";
 import JobController from "../modules/jobs";
 import { httpConstants } from "../common/constants";
-import Config from "../../config";
+
 const CronMasterJob = require("cron-master").CronMasterJob;
 
 module.exports = new CronMasterJob({
@@ -24,9 +24,7 @@ module.exports = new CronMasterJob({
         "",
         httpConstants.LOG_LEVEL_TYPE.INFO
       );
-      // if (Boolean(Config.ENABLE_HISTORY_PRICE_CRON)) {
-      await JobController.syncHistoryPriceData();
-      // }
+      await JobController.syncTokenInfo();
       done(null, "ok");
     },
   },
