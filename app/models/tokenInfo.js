@@ -40,7 +40,7 @@ TokenInfo.static({
   updateManyTokensInfo: function (findObj, updateObj) {
     return this.updateMany(findObj, updateObj);
   },
-  getTokenInfo: function (
+  getTokensInfo: function (
     findObj,
     selectionKey = "",
     skip = 0,
