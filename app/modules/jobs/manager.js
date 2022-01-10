@@ -2,6 +2,7 @@ import Transfer from "../../models/Transfer";
 import Contract from "../../models/Contract";
 import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
+import TokenInfo from "../../models/tokenInfo";
 import Config from "../../../config";
 import moment from "moment";
 import HTTPService from "../../service/http-service";
@@ -32,11 +33,20 @@ export default class BLManager {
   }
 
   async syncHistoryPriceData() {
-    let contracts = await Contract.find({
-      symbol: { $exists: true },
-      isActive: true,
-      isDeleted: false,
-    });
+    let contracts = await Contract.aggregate([
+      {
+        $match: {
+          ERC: { $gt: 0 },
+          symbol: { $exists: true },
+        },
+      },
+      {
+        $group: {
+          _id: "$symbol",
+          address: { $first: "$address" },
+        },
+      },
+    ]);
     if (!contracts || !contracts.length) {
       return true;
     }
@@ -45,6 +55,32 @@ export default class BLManager {
       return true;
     }
     await HistoryPrice.bulkWrite(historyPriceData);
+    return true;
+  }
+
+  async syncTokenInfo() {
+    let contracts = await Contract.aggregate([
+      {
+        $match: {
+          ERC: { $gt: 0 },
+          symbol: { $exists: true },
+        },
+      },
+      {
+        $group: {
+          _id: "$symbol",
+          address: { $first: "$address" },
+        },
+      },
+    ]);
+    if (!contracts || !contracts.length) {
+      return true;
+    }
+    let tokenInfoData = await getTokenInfo(contracts);
+    if (!tokenInfoData || !tokenInfoData.length) {
+      return true;
+    }
+    await TokenInfo.bulkWrite(tokenInfoData);
     return true;
   }
 }
@@ -171,7 +207,7 @@ async function getMarketCapData(symbol) {
       continue;
     }
 
-    const URL = `${Config.COIN_MARKET_API_URL}/latest?symbol=${symbol}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&convert=${conversions[index]}`;
+    const URL = `${Config.COIN_MARKET_API_URL}/quotes/latest?symbol=${symbol}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&convert=${conversions[index]}`;
     let response = await HTTPService.executeHTTPRequest(
       httpConstants.METHOD_TYPE.GET,
       URL,
@@ -196,22 +232,19 @@ async function getMarketCapData(symbol) {
 }
 
 async function getHistoryPriceData(contracts) {
-  const startTime = moment().subtract(1, "day").startOf("day").valueOf();
-  const endTime = Math.round(
-    moment().subtract(1, "day").endOf("day").valueOf() / 1000
-  );
+  const endTime = moment().subtract(2, "day").endOf("day").format("YYYY-MM-DD");
   let data = [];
   for (let index = 0; index < contracts.length; index++) {
     const selectedContract = contracts[index];
-    if (!selectedContract.symbol) {
+    if (!selectedContract || !selectedContract._id) {
       continue;
     }
-    // https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical?symbol=ECOIN&CMC_PRO_API_KEY=cb190bb3-b61a-4d83-8559-374edbfb27b3&time_start=1641254400&time_end=1641254400
-    const URL = `${Config.COIN_MARKET_API_URL}/historical?symbol=${
-      selectedContract.symbol
-    }&CMC_PRO_API_KEY=${Config.CMC_API_KEY}}&time_start=${
-      startTime / 1000
-    }&time_end=${endTime}`;
+    // https://pro-api.coinmarketcap.com/v1/cryptocurrency/historical?symbol=ECOIN&CMC_PRO_API_KEY=cb190bb3-b61a-4d83-8559-374edbfb27b3&time_start=1641254400&time_end=1641254400
+    const URL = `${Config.COIN_MARKET_API_URL}/ohlcv/historical?symbol=${
+      selectedContract._id
+    }&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&time_start=${moment()
+      .subtract(3, "days")
+      .format("YYYY-MM-DD")}&time_end=${endTime}`;
     let response = await HTTPService.executeHTTPRequest(
       httpConstants.METHOD_TYPE.GET,
       URL,
@@ -236,11 +269,11 @@ async function getHistoryPriceData(contracts) {
     data.push({
       updateOne: {
         filter: {
-          timestamp: startTime,
-          tokenAddress: contracts[index].address,
+          timestamp: moment(USDData.timestamp).valueOf(),
+          tokenAddress: selectedContract.address,
         },
         update: {
-          tokenAddress: contracts[index].address,
+          tokenAddress: selectedContract.address,
           openingTime: moment(currentDateData.time_open).valueOf(),
           closingTime: moment(currentDateData.time_close).valueOf(),
           highValueTime: moment(currentDateData.time_high).valueOf(),
@@ -250,8 +283,8 @@ async function getHistoryPriceData(contracts) {
           lowestPrice: USDData.low,
           closingPrice: USDData.close,
           volume: USDData.volume,
-          marketCap: USDData.market_data,
-          timestamp: moment(currentDateData.timestamp).valueOf(),
+          marketCap: USDData.market_cap,
+          timestamp: moment(USDData.timestamp).valueOf(),
         },
       },
     });
@@ -294,3 +327,66 @@ async function getHistoryPriceData(contracts) {
 //     credit_count: 1,
 //   },
 // };
+
+async function getTokenInfo(contracts) {
+  let data = [];
+  for (let index = 0; index < contracts.length; index++) {
+    const selectedContract = contracts[index];
+    if (!selectedContract || !selectedContract._id) {
+      continue;
+    }
+
+    const URL = `${Config.COIN_MARKET_API_URL}/quotes/latest?symbol=${selectedContract._id}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}`;
+
+    let response = await HTTPService.executeHTTPRequest(
+      httpConstants.METHOD_TYPE.GET,
+      URL,
+      "",
+      {},
+      {
+        "Content-Type": httpConstants.HEADER_TYPE.APPLICATION_JSON,
+      }
+    );
+    if (
+      !response ||
+      !response.status ||
+      response.status.error_message ||
+      !response.data ||
+      !response.data[selectedContract._id]
+    ) {
+      continue;
+    }
+
+    const info = response.data[selectedContract._id];
+    data.push({
+      updateOne: {
+        filter: {
+          symbol: info.symbol,
+          tokenAddress: selectedContract.address,
+        },
+        update: {
+          tokenAddress: selectedContract.address,
+          symbol: info.symbol,
+          name: info.name,
+          slug: info.slug,
+          numMarketPairs: info.num_market_pairs,
+          isFiat: info.is_fiat,
+          cmcRank: info.cmc_rank,
+
+          circulatingSupply: info.circulating_supply,
+          totalSupply: info.total_supply,
+          maxSupply: info.max_supply,
+          quote: info.quote,
+          tags: info.tags,
+          platform: info.platform,
+          isActive: info.is_active,
+
+          modifiedOn: moment(info.last_updated).valueOf(),
+          createdOn: moment(info.date_added).valueOf(),
+        },
+        upsert: true,
+      },
+    });
+  }
+  return data;
+}

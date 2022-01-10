@@ -10,4 +10,10 @@ export default class JobController {
       console.log(err, "err");
     });
   }
+
+  static async syncTokenInfo() {
+    await new BLManager().syncTokenInfo().catch((err) => {
+      console.log(err, "err");
+    });
+  }
 }

@@ -130,4 +130,6 @@ module.exports = (app) => {
     ValidationManger.validateGetAddressAnalytics,
     new AnalyticsController().getAddressBalanceAnalytics
   );
+
+  app.get("/token-info/:symbol", new AnalyticsController().getTokenInfo);
 };

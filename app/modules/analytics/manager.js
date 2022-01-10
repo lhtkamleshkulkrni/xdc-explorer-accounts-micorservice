@@ -2,6 +2,7 @@ import moment from "moment";
 import Contract from "../../models/Contract";
 import Transfer from "../../models/Transfer";
 import Accounts from "../../models/Account";
+import TokenInfo from "../../models/tokenInfo";
 import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
 import Web3 from "xdc3";
@@ -11,6 +12,7 @@ import { AnalyticsDataType } from "../../common/constants";
 import { updateUniqueAddress } from "../jobs/manager";
 const Transactions = model("xin-transactions", new Schema({}));
 const CoinMarketExchanges = model("xin-coin-market-exchanges", new Schema({}));
+
 export default class Manger {
   getTokenBalance = async (requestData) => {
     const contractDetail = await Contract.getContract({
@@ -301,6 +303,10 @@ export default class Manger {
     if (requestData.type == AnalyticsDataType.TOKEN_TRANSFER) {
       return this.getTokenAnalyticsDataForAddress(findObj, requestData);
     }
+    if (requestData.type == AnalyticsDataType.XDC_BALANCE) {
+      return this.getAddressBalanceAnalytics(requestData);
+    }
+    return `invalid value for type`;
   };
 
   getTransactionAnalyticsData = async (findObj, requestData) => {
@@ -379,7 +385,7 @@ export default class Manger {
         receivedAddresses: receivedAddresses.length,
         feesUsed,
         feesSpent,
-        totalTrasactions: filteredData.filtered.length,
+        totalTransactions: filteredData.filtered.length,
       });
     }
     // return { data, totalFeesSpent, totalFeesUsed };
@@ -486,6 +492,9 @@ export default class Manger {
   };
 
   getAddressBalanceAnalytics = async (requestData) => {
+    if (!requestData.currency) {
+      throw `Currency is misssing from the request`;
+    }
     let response = await Transactions.find(
       {
         $and: [
@@ -603,6 +612,10 @@ export default class Manger {
     }
 
     return data;
+  };
+
+  getTokenInfo = (requestData) => {
+    return TokenInfo.getTokenInfo({ symbol: requestData.symbol });
   };
 }
 

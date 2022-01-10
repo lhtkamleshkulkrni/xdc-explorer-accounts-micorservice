@@ -91,4 +91,5 @@ export const apiFailureMessage = {
 export const AnalyticsDataType = {
   XDC_TRANSACTIONS: "XDC_TRANSACTIONS",
   TOKEN_TRANSFER: "TOKEN_TRANSFER",
+  XDC_BALANCE: "XDC_BALANCE",
 };
