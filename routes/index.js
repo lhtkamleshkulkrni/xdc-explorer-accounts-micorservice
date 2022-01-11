@@ -36,6 +36,7 @@ module.exports = (app) => {
     ValidationManger.validateLatestAccounts,
     new AccountController().getLatestAccounts
   );
+  app.post("/accounts-list", new AccountController().getAccountList);
   app.get(
     "/getSomeDaysAccounts/:numberOfDays",
     ValidationManger.validateSomeDayAccounts,
