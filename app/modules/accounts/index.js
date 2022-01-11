@@ -33,6 +33,16 @@ export default class AccountController{
         return Utils.response(response, latestAccountsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
 
+    async getAccountList(request, response) {
+        lhtWebLog("AccountController:getAccountList", "", "");
+        let [error, latestAccountsResponse] = await Utils.parseResponse(new AccountManager().getAccountList(request.body));
+        if (error) {
+            lhtWebLog("AccountController:getAccountList", "latestAccountsResponse err", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, latestAccountsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
+
     async getSomeDaysAccounts(request,response){
         Utils.lhtLog("AccountController:getSomeDaysAccounts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
         let [error, someDaysAccountsResponse] = await Utils.parseResponse(new AccountManager().getSomeDaysAccounts(request.params.numberOfDays));
