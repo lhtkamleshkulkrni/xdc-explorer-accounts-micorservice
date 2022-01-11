@@ -15,8 +15,9 @@ const CoinMarketExchanges = model("xin-coin-market-exchanges", new Schema({}));
 
 export default class Manger {
   getTokenBalance = async (requestData) => {
+    let tokenAddress=requestData.tokenAddress.toLowerCase();
     const contractDetail = await Contract.getContract({
-      address: requestData.tokenAddress,
+      address: tokenAddress,
     });
     if (!contractDetail) {
       throw `No such contract found`;
@@ -315,7 +316,6 @@ export default class Manger {
       from: 1,
       to: 1,
       gas: 1,
-      gasPrice: 1,
       gasPrice: 1,
       value: 1,
     });

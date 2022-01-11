@@ -88,7 +88,8 @@ export default class ContractManager {
 
     async contractDetailsUsingAddressResponse(req) {
         Utils.lhtLog("ContractManager:contractDetailsUsingAddressResponse", "contractDetailsUsingAddressResponse", req, "");
-        let contractResponse = await ContractModel.getContract({address: req.contractAddress});
+        let contractAddress=req.contractAddress.toLowerCase();
+        let contractResponse = await ContractModel.getContract({address:contractAddress});
         let response = {};
         let contractStatus = 'Unverified';
         if (!contractResponse) {
@@ -130,8 +131,9 @@ export default class ContractManager {
 
     async getListOfHoldersForToken(req) {
         Utils.lhtLog("ContractManager:getListOfHoldersForToken", "getListOfHoldersForToken", "", "");
+        let tokenAddress=req.params.address.toLowerCase();
         let findObj = {
-            tokenContract: req.params.address
+            tokenContract: tokenAddress
         };
         let responseCount = await TokenHolderModel.countDocuments(findObj);
         let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.query.skip), parseInt(req.query.limit), {balance: -1});
@@ -251,6 +253,7 @@ export default class ContractManager {
         Utils.lhtLog("ContractManager:getHolderDetailsUsingAddress", "", "", "");
         let result = [];
         let address = req.query.address;
+        address=address.toLowerCase();
         let skip = parseInt(req.query.skip);
         let limit = parseInt(req.query.limit);
         let queryStr;
@@ -314,7 +317,7 @@ export default class ContractManager {
                         $match: {
                             "ERC": {"$gt": 0},
                             $or: [
-                                {address: {"$regex": reqObj.query.data, "$options": "i"}},
+                                {address: {"$regex": reqObj.query.data.toLowerCase(), "$options": "i"}},
                                 {tokenName: {"$regex": reqObj.query.data, "$options": "i"}}
                             ]
                         },

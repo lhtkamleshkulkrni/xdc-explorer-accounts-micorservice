@@ -10,6 +10,7 @@ export default class AccountManager {
     }
 
     async getAccountDetailsUsingAddress(address) {
+        address=address.toLowerCase();
         Utils.lhtLog("AccountManager:getAccountDetailsUsingAddress", "getAccountDetailsUsingAddress", address, "")
         return await AccountModel.getAccount({address: address});
     }
