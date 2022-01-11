@@ -42,11 +42,14 @@ export default class AccountManager {
         const accountListRequest = this.parseGetContractListRequest(requestData);
         if (requestData.percentage) {
             const totalSupply = await this.getCoinMarketTotalSupply();
-            const balanceStart = (requestData.percentage - 25) * totalSupply / 100
-            const balanceEnd = (requestData.percentage) * totalSupply / 100
-            requestData.balance = {$gte: balanceStart, $lte: balanceEnd}
+            const balanceStart = ((requestData.percentage - 25) * totalSupply) / 100
+            const balanceEnd = (requestData.percentage * totalSupply) / 100
+            delete accountListRequest.requestData.percentage
+            accountListRequest.requestData.balance = {$gt: balanceStart, $lt: balanceEnd}
         }
-        return await AccountModel.getAccountList(accountListRequest.requestData, accountListRequest.selectionKeys, accountListRequest.skip, accountListRequest.limit, accountListRequest.sortingKey);
+        const accountList = await AccountModel.getAccountList(accountListRequest.requestData, accountListRequest.selectionKeys, accountListRequest.skip, accountListRequest.limit, accountListRequest.sorting);
+        let totalCount = await AccountModel.count(accountListRequest.requestData)
+        return {accountList, totalCount};
     }
 
     getCoinMarketTotalSupply = async () => {
@@ -75,6 +78,7 @@ export default class AccountManager {
         if (requestObj.sortKey) {
             sorting = {[requestObj.sortKey]: requestObj.sortType || -1};
             delete requestObj.sortKey;
+            delete requestObj.sortType;
         }
         let selectionKeys = '';
         if (requestObj.selectionKeys) {
@@ -95,5 +99,4 @@ export default class AccountManager {
             delete requestObj.searchValue;
         return {requestData: requestObj, skip, limit, sorting, selectionKeys};
     }
-
 }

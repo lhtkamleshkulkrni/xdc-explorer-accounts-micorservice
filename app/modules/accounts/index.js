@@ -34,10 +34,10 @@ export default class AccountController{
     }
 
     async getAccountList(request, response) {
-        lhtWebLog("AccountController:getAccountList", "", "");
+        Utils.lhtLog("AccountController:getAccountList", "", "");
         let [error, latestAccountsResponse] = await Utils.parseResponse(new AccountManager().getAccountList(request.body));
         if (error) {
-            lhtWebLog("AccountController:getAccountList", "latestAccountsResponse err", error, "", "ERROR")
+            Utils.lhtLog("AccountController:getAccountList", "latestAccountsResponse err", error, "", "ERROR")
             return Utils.handleError([error], request, response);
         }
         return Utils.response(response, latestAccountsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
