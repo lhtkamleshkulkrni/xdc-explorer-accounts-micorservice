@@ -286,8 +286,8 @@ async function getHistoryPriceData(contracts) {
           marketCap: USDData.market_cap,
           timestamp: moment(USDData.timestamp).valueOf(),
         },
+        upsert: true,
       },
-      upsert: true,
     });
   }
   return data;
