@@ -25,7 +25,7 @@ export default class ContractController{
 
     async getListOfTokens(request,response){
         Utils.lhtLog("ContractController:getListOfTokens", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
-        let [error, listOfTokensResponse] = await Utils.parseResponse(new ContractManager().getListOfTokens(request.query));
+        let [error, listOfTokensResponse] = await Utils.parseResponse(new ContractManager().getListOfTokens(request.body));
         if (error) {
             Utils.lhtLog("ContractController:getListOfTokens", "listOfTokensResponse err", error, "", "ERROR")
             return Utils.handleError([error], request, response);

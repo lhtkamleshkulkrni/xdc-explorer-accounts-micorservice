@@ -47,7 +47,7 @@ module.exports = (app) => {
    * Token APIs
    */
   app.get("/getTotalTokens", new ContractController().getTotalTokens);
-  app.get(
+  app.post(
     "/getListOfTokens",
     ValidationManger.validateLatestAccounts,
     new ContractController().getListOfTokens

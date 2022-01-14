@@ -3,6 +3,7 @@ let Schema = mongoose.Schema;
 
 const ContractSchema = new Schema({
     address: { type: String, default: "" },
+    holdersCount: { type: Number, default: 0 },
     blockNumber: { type: Number, default: 0 },
     status: { type: String, default: "Unverified" },
     ERC: { type: Number, index: true },

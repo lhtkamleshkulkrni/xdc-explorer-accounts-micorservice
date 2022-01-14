@@ -20,47 +20,54 @@ export default class ContractManager {
 
     async getListOfTokens(req) {
         Utils.lhtLog("ContractManager:getListOfTokens", "getListOfTokens", req, "");
-        let resultSet = await ContractModel.getContractList({"ERC": {"$gt": 0}}, {
+
+        const query = {
+            "ERC": {"$gt": 0},
+            $or:[
+                {"address": {'$regex': req.searchKey, '$options': 'i'}},
+                {"tokenName": {'$regex': req.searchKey, '$options': 'i'}}
+            ]
+        };
+        let totalCount = await ContractModel.count(query);
+        let tokens = await ContractModel.getContractList(query, {
             address: 1,
+            holdersCount: 1,
             tokenName: 1,
             symbol: 1,
-            sourceCode: 1,
-            compilerVersion: 1,
-            abi: 1,
             totalSupply: 1,
             decimals:1
-        }, parseInt(req.skip), parseInt(req.limit), {_id: -1});
-        const resultArray = []
-        for (let v of resultSet) {
-            let holderCount = await TokenHolderModel.countDocuments({tokenContract: v.address});
-            // console.log('h----',v)
-            if (v.abi != '' && v.sourceCode != '' && v.compilerVersion != '') {
-                resultArray.push({
-                    "_id": v._id,
-                    "address": v.address,
-                    "tokenName": v.tokenName,
-                    "symbol": v.symbol,
-                    "type": "XRC20",
-                    "status": "verified",
-                    "totalSupply": v.totalSupply,
-                    "tokenHolders": holderCount,
-                    decimals:v.decimals
-                })
-            } else {
-                resultArray.push({
-                    "_id": v._id,
-                    "address": v.address,
-                    "tokenName": v.tokenName,
-                    "symbol": v.symbol,
-                    "type": "XRC20",
-                    "status": "unverified",
-                    "totalSupply": v.totalSupply,
-                    "tokenHolders": holderCount,
-                    decimals:v.decimals
-                })
-            }
-        }
-        return resultArray;
+        }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : {_id: -1});
+        // const resultArray = [];
+        // for (let v of resultSet) {
+        //     let holderCount = await TokenHolderModel.countDocuments({tokenContract: v.address});
+        //     // console.log('h----',v)
+        //     if (v.abi != '' && v.sourceCode != '' && v.compilerVersion != '') {
+        //         resultArray.push({
+        //             "_id": v._id,
+        //             "address": v.address,
+        //             "tokenName": v.tokenName,
+        //             "symbol": v.symbol,
+        //             "type": "XRC20",
+        //             "status": "verified",
+        //             "totalSupply": v.totalSupply,
+        //             "tokenHolders": holderCount,
+        //             decimals:v.decimals
+        //         })
+        //     } else {
+        //         resultArray.push({
+        //             "_id": v._id,
+        //             "address": v.address,
+        //             "tokenName": v.tokenName,
+        //             "symbol": v.symbol,
+        //             "type": "XRC20",
+        //             "status": "unverified",
+        //             "totalSupply": v.totalSupply,
+        //             "tokenHolders": holderCount,
+        //             decimals:v.decimals
+        //         })
+        //     }
+        // }
+        return {tokens,totalCount};
     }
 
     async getListOfContracts(req) {
