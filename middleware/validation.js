@@ -14,6 +14,13 @@ module.exports = {
       skip: yup.string().required(),
       limit: yup.string().required(),
     });
+    await validate(schema, req.query, res, next);
+  },
+  validateSkipAndLimit: async (req, res, next) => {
+    const schema = yup.object().shape({
+      skip: yup.string().required(),
+      limit: yup.string().required(),
+    });
     await validate(schema, req.body, res, next);
   },
   validateSomeDayAccounts: async (req, res, next) => {

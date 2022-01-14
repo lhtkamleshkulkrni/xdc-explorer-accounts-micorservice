@@ -49,7 +49,7 @@ module.exports = (app) => {
   app.get("/getTotalTokens", new ContractController().getTotalTokens);
   app.post(
     "/getListOfTokens",
-    ValidationManger.validateLatestAccounts,
+    ValidationManger.validateSkipAndLimit,
     new ContractController().getListOfTokens
   ); // It Takes some time
   app.get(
