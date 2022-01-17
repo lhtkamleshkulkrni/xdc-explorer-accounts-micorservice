@@ -63,7 +63,7 @@ module.exports = (app) => {
    * Contract APIs
    */
   app.get("/getTotalContracts", new ContractController().getTotalContracts);
-  app.get(
+  app.post(
     "/getListOfContracts",
     ValidationManger.validateLatestAccounts,
     new ContractController().getListOfContracts

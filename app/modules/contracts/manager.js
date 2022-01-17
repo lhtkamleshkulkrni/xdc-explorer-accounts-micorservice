@@ -89,7 +89,7 @@ export default class ContractManager {
             isActive: 1.0,
             isDeleted: 1.0,
         }
-        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), {blockNumber: -1});
+        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : {blockNumber: -1});
 
     }
 
