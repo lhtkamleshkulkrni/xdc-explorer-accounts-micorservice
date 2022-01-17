@@ -70,7 +70,7 @@ export default class ContractManager {
         return {tokens,totalCount};
     }
 
-    async getListOfContracts(req) {
+    async getListOfContracts(req , reqBody) {
         Utils.lhtLog("ContractManager:getListOfContracts", "getListOfContracts", req, "");
         let selectionKey = {
             address: 1.0,
@@ -89,7 +89,7 @@ export default class ContractManager {
             isActive: 1.0,
             isDeleted: 1.0,
         }
-        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : {blockNumber: -1});
+        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), reqBody.sortKey ? reqBody.sortKey : {blockNumber: -1});
 
     }
 
