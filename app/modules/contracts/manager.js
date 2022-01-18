@@ -23,7 +23,7 @@ export default class ContractManager {
 
         const query = {
             "ERC": {"$gt": 0},
-            $or:[
+            $or: [
                 {"address": {'$regex': req.searchKey, '$options': 'i'}},
                 {"tokenName": {'$regex': req.searchKey, '$options': 'i'}}
             ]
@@ -35,7 +35,7 @@ export default class ContractManager {
             tokenName: 1,
             symbol: 1,
             totalSupply: 1,
-            decimals:1
+            decimals: 1
         }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : {_id: -1});
         // const resultArray = [];
         // for (let v of resultSet) {
@@ -67,10 +67,10 @@ export default class ContractManager {
         //         })
         //     }
         // }
-        return {tokens,totalCount};
+        return {tokens, totalCount};
     }
 
-    async getListOfContracts(req , reqBody) {
+    async getListOfContracts(req, reqBody) {
         Utils.lhtLog("ContractManager:getListOfContracts", "getListOfContracts", req, "");
         let selectionKey = {
             address: 1.0,
@@ -95,14 +95,14 @@ export default class ContractManager {
 
     async contractDetailsUsingAddressResponse(req) {
         Utils.lhtLog("ContractManager:contractDetailsUsingAddressResponse", "contractDetailsUsingAddressResponse", req, "");
-        let contractAddress=req.contractAddress.toLowerCase();
-        let contractResponse = await ContractModel.getContract({address:contractAddress});
+        let contractAddress = req.contractAddress.toLowerCase();
+        let contractResponse = await ContractModel.getContract({address: contractAddress});
         let response = {};
         let contractStatus = 'Unverified';
         if (!contractResponse) {
             return response
         }
-        contractResponse =contractResponse.toJSON()
+        contractResponse = contractResponse.toJSON()
         if (contractResponse.sourceCode && contractResponse.abi && contractResponse.byteCode) {
             contractStatus = "Verified"
         } else {
@@ -118,40 +118,45 @@ export default class ContractManager {
         let skip = 0
         let limit = 0
         let keywords = ''
-        if(res.skip){
+        if (res.skip) {
             skip = parseInt(res.skip)
         }
-        if(res.limit){
+        if (res.limit) {
             limit = parseInt(res.limit)
         }
-        if(res.keywords){
+        if (res.keywords) {
             keywords = res.keywords
         }
-            const totalResult = await ContractModel.countData( { $or: [ { address: { $regex : ".*" + keywords + ".*", $options: 'i' } },
-                { tokenName: { $regex : ".*" + keywords + ".*", $options: 'i' } } ] }
-                 )            
+        const totalResult = await ContractModel.countData({
+                $or: [{address: {$regex: ".*" + keywords + ".*", $options: 'i'}},
+                    {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
+            }
+        )
 
-            const datas = await ContractModel.getContractList( { $or: [ { address: { $regex : ".*" + keywords + ".*", $options: 'i' } },
-                { tokenName: { $regex : ".*" + keywords + ".*", $options: 'i' } } ] },"",skip,limit)
-            return {"response":datas , "totalRecord":totalResult}
+        const datas = await ContractModel.getContractList({
+            $or: [{address: {$regex: ".*" + keywords + ".*", $options: 'i'}},
+                {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
+        }, "", skip, limit)
+        return {"response": datas, "totalRecord": totalResult}
     }
 
     async getListOfHoldersForToken(req) {
         Utils.lhtLog("ContractManager:getListOfHoldersForToken", "getListOfHoldersForToken", "", "");
-        let tokenAddress=req.params.address.toLowerCase();
+        let tokenAddress = req.params.address.toLowerCase();
         let findObj = {
             tokenContract: tokenAddress
         };
         let responseCount = await TokenHolderModel.countDocuments(findObj);
-        let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.query.skip), parseInt(req.query.limit), {balance: -1});
+        let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.body.skip), parseInt(req.body.limit), req.body.sortKey ? req.body.sortKey : {balance: -1});
         /**
          A token which has the maximum no. of address for a particular contract address has the rank 1 and go on.
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
          */
         let total = 0;
-        response.sort(function (a, b) {
-            return (Number(b.balance) / parseFloat(10 ** parseInt(b.decimals))) - (Number(a.balance) / parseFloat(10 ** parseInt(a.decimals)));
-        });
+        if (!req.body.sortKey)
+            response.sort(function (a, b) {
+                return (Number(b.balance) / parseFloat(10 ** parseInt(b.decimals))) - (Number(a.balance) / parseFloat(10 ** parseInt(a.decimals)));
+            });
         response.map(function (t) {
             total += t.balance;
         });
@@ -174,7 +179,7 @@ export default class ContractManager {
 
     async someDaysHolders(req) {
         Utils.lhtLog("ContractManager:someDaysHolders", "", "", "");
-        let numberOfDays= Number(req.params.numberOfDays);
+        let numberOfDays = Number(req.params.numberOfDays);
         let endTime = parseInt(moment().valueOf() / 1000);
         let startTime = parseInt(moment().subtract(req.params.numberOfDays, "days").valueOf() / 1000);
 
@@ -241,17 +246,17 @@ export default class ContractManager {
             ])
 
         const resultArray = []
-        if(responseHolder.length>0)
-        responseHolder.map((item) => {
-            resultArray.push({"date": item.date, "count": (item.toCount + item.fromCount)})
-        });
-        else{
-        for (let index = numberOfDays; index > 0; index--) {
-            let startTime = parseInt(moment().subtract(index, "days").valueOf() / 1000);
-               resultArray.push({"date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0})
-   
+        if (responseHolder.length > 0)
+            responseHolder.map((item) => {
+                resultArray.push({"date": item.date, "count": (item.toCount + item.fromCount)})
+            });
+        else {
+            for (let index = numberOfDays; index > 0; index--) {
+                let startTime = parseInt(moment().subtract(index, "days").valueOf() / 1000);
+                resultArray.push({"date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0})
+
+            }
         }
-    }
 
         return resultArray
     }
@@ -260,7 +265,7 @@ export default class ContractManager {
         Utils.lhtLog("ContractManager:getHolderDetailsUsingAddress", "", "", "");
         let result = [];
         let address = req.body.address;
-        address=address.toLowerCase();
+        address = address.toLowerCase();
         let skip = parseInt(req.body.skip);
         let limit = parseInt(req.body.limit);
         let queryStr;
@@ -342,7 +347,14 @@ export default class ContractManager {
                     {$limit: limit},
                     {
                         $project: {
-                            _id: 1, address: 1, "type": "XRC20", tokenName: 1, tokenHolders: {$size: "$tokenholders"},totalSupply:1,symbol:1,decimals:1,
+                            _id: 1,
+                            address: 1,
+                            "type": "XRC20",
+                            tokenName: 1,
+                            tokenHolders: {$size: "$tokenholders"},
+                            totalSupply: 1,
+                            symbol: 1,
+                            decimals: 1,
                             status: {$cond: {if: {$gte: ["$tokenStatus", 3]}, then: "verified", else: "unverified"}}
                         }
                     }

@@ -82,9 +82,9 @@ module.exports = (app) => {
   /*
     Holder APIs
     */
-  app.get(
+  app.post(
     "/getListOfHoldersForToken/:address",
-    ValidationManger.validateLatestAccounts,
+    ValidationManger.validateLatestAccountsPost,
     new ContractController().getListOfHoldersForToken
   );
   app.post(
