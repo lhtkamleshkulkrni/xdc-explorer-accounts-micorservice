@@ -87,7 +87,7 @@ module.exports = (app) => {
     ValidationManger.validateLatestAccounts,
     new ContractController().getListOfHoldersForToken
   );
-  app.get(
+  app.post(
     "/getHolderDetailsUsingAddress",
     ValidationManger.validateHolderDetailsUsingAddress,
     new ContractController().getHolderDetailsUsingAddress

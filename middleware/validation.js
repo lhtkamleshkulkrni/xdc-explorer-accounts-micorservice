@@ -41,7 +41,7 @@ module.exports = {
       limit: yup.string().required(),
       address: yup.string().required(),
     });
-    await validate(schema, req.query, res, next);
+    await validate(schema, req.body, res, next);
   },
   validateTokenNameAndAddress: async (req, res, next) => {
     const schema = yup.object().shape({

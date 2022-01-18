@@ -259,15 +259,15 @@ export default class ContractManager {
     async getHolderDetailsUsingAddress(req) {
         Utils.lhtLog("ContractManager:getHolderDetailsUsingAddress", "", "", "");
         let result = [];
-        let address = req.query.address;
+        let address = req.body.address;
         address=address.toLowerCase();
-        let skip = parseInt(req.query.skip);
-        let limit = parseInt(req.query.limit);
+        let skip = parseInt(req.body.skip);
+        let limit = parseInt(req.body.limit);
         let queryStr;
-        if (req.query.keywords) {
+        if (req.body.keywords) {
             queryStr = {
                 $or: [
-                    {"hash": {'$regex': req.query.keywords, '$options': 'i'}}
+                    {"hash": {'$regex': req.body.keywords, '$options': 'i'}}
                 ],
                 "from": address
             }
@@ -283,7 +283,7 @@ export default class ContractManager {
             from: 1,
             to: 1,
             value: 1
-        }).skip(skip).limit(limit).sort({balance: -1});
+        }).skip(skip).limit(limit).sort(req.body.sortKey ? req.body.sortKey : {value: -1});
         let holderTransactionsCount = await TransferTokenModel.countDocuments(queryStr);
         result.push({
             Holder_address: holderDetails && holderDetails.address,
