@@ -44,10 +44,10 @@ export default class Manger {
         ],
         $or: [
           {
-            from: requestData.walletAddress,
+            from: requestData.walletAddress.toLowerCase(),
           },
           {
-            to: requestData.walletAddress,
+            to: requestData.walletAddress.toLowerCase(),
           },
         ],
       },
@@ -61,8 +61,8 @@ export default class Manger {
     );
     let data = [];
     let totalBalance = await this.getBalance(
-      requestData.tokenAddress,
-      requestData.walletAddress
+      requestData.tokenAddress.toLowerCase(),
+      requestData.walletAddress.toLowerCase()
     );
     let currentBalance = totalBalance;
     if (response && response.length) {
@@ -90,7 +90,7 @@ export default class Manger {
         }
         filteredData.filtered.map((transaction) => {
           transaction = transaction._doc;
-          if (transaction.from == requestData.walletAddress) {
+          if (transaction.from.toLowerCase() === requestData.walletAddress.toLowerCase()) {
             fromAmount += Number(transaction.value);
           } else {
             toAmount += Number(transaction.value);
@@ -120,13 +120,13 @@ export default class Manger {
 
   getTokenTransferCount = async (requestData) => {
     const contractDetail = await Contract.getContract({
-      address: requestData.tokenAddress,
+      address: requestData.tokenAddress.toLowerCase(),
     });
     if (!contractDetail) {
       throw `No such contract found`;
     }
     let startTime = requestData.from / 1000;
-    if (requestData.type == "all") {
+    if (requestData.type === "all") {
       startTime = Math.round(contractDetail.createdOn / 1000);
       requestData.from = contractDetail.createdOn;
     }
@@ -144,15 +144,15 @@ export default class Manger {
           },
         },
       ],
-      contract: requestData.tokenAddress,
-      from: { $nin: [requestData.tokenAddress] },
-      to: { $nin: [requestData.tokenAddress] },
+      contract: requestData.tokenAddress.toLowerCase(),
+      from: { $nin: [requestData.tokenAddress.toLowerCase()] },
+      to: { $nin: [requestData.tokenAddress.toLowerCase()] },
       $or: [
         {
-          from: requestData.walletAddress,
+          from: requestData.walletAddress.toLowerCase(),
         },
         {
-          to: requestData.walletAddress,
+          to: requestData.walletAddress.toLowerCase(),
         },
       ],
     });
@@ -179,8 +179,8 @@ export default class Manger {
         filteredData.filtered.map((transaction) => {
           transaction = transaction._doc;
           if (
-            transaction.from == requestData.walletAddress &&
-            transaction.to !== requestData.tokenAddress
+            transaction.from.toLowerCase() === requestData.walletAddress.toLowerCase() &&
+            transaction.to.toLowerCase() !== requestData.tokenAddress.toLowerCase()
           ) {
             outBoundTransfer += 1;
             if (
@@ -190,7 +190,7 @@ export default class Manger {
               uniqueAddressesSent.push(transaction.to);
             }
           } else if (
-            transaction.to == requestData.walletAddress &&
+            transaction.to.toLowerCase() === requestData.walletAddress.toLowerCase() &&
             transaction.from !== requestData.tokenAddress
           ) {
             inBoundTransfer += 1;
@@ -262,7 +262,7 @@ export default class Manger {
           },
         },
       ],
-      tokenAddress: requestData.tokenAddress,
+      tokenAddress: requestData.tokenAddress.toLowerCase(),
     });
   };
 
@@ -285,7 +285,7 @@ export default class Manger {
           },
         },
       ],
-      tokenAddress: requestData.tokenAddress,
+      tokenAddress: requestData.tokenAddress.toLowerCase(),
     });
   };
 
@@ -295,16 +295,16 @@ export default class Manger {
         { timestamp: { $gte: requestData.from / 1000 } },
         { timestamp: { $lte: requestData.to / 1000 } },
       ],
-      $or: [{ from: requestData.address }, { to: requestData.address }],
+      $or: [{ from: requestData.address.toLowerCase() }, { to: requestData.address.toLowerCase() }],
       timestamp: { $exists: true },
     };
-    if (requestData.type == AnalyticsDataType.XDC_TRANSACTIONS) {
+    if (requestData.type === AnalyticsDataType.XDC_TRANSACTIONS) {
       return this.getTransactionAnalyticsData(findObj, requestData);
     }
-    if (requestData.type == AnalyticsDataType.TOKEN_TRANSFER) {
+    if (requestData.type === AnalyticsDataType.TOKEN_TRANSFER) {
       return this.getTokenAnalyticsDataForAddress(findObj, requestData);
     }
-    if (requestData.type == AnalyticsDataType.XDC_BALANCE) {
+    if (requestData.type === AnalyticsDataType.XDC_BALANCE) {
       return this.getAddressBalanceAnalytics(requestData);
     }
     return `invalid value for type`;
@@ -351,13 +351,13 @@ export default class Manger {
           ? Number(transaction.value)
           : 0;
 
-        if (transaction.from == requestData.address) {
+        if (transaction.from.toLowerCase() === requestData.address.toLowerCase()) {
           feesSpent += !isNaN(Number(transaction.gasPrice))
             ? Number(transaction.gasPrice)
             : 0;
           sentAmount += amount;
           if (
-            sentAddresses.findIndex((item) => item.address == transaction.to) ==
+            sentAddresses.findIndex((item) => item.address.toLowerCase() === transaction.to.toLowerCase()) ===
             -1
           )
             sentAddresses.push({ address: transaction.to });
@@ -370,8 +370,8 @@ export default class Manger {
           totalFeesUsed += feesUsed;
           if (
             receivedAddresses.findIndex(
-              (item) => item.address == transaction.from
-            ) == -1
+              (item) => item.address.toLowerCase() === transaction.from.toLowerCase()
+            ) === -1
           )
             receivedAddresses.push({ address: transaction.from });
         }
@@ -430,7 +430,7 @@ export default class Manger {
         const amount = !isNaN(Number(doc.value)) ? Number(doc.value) : 0;
         contracts = updateContracts(contracts, doc, amount);
 
-        if (doc.from == requestData.address) {
+        if (doc.from.toLowerCase() === requestData.address.toLowerCase()) {
           const recieverIndex = uniqueReceivers.findIndex(
             (item) => item.reciever == doc.to
           );
@@ -511,10 +511,10 @@ export default class Manger {
         ],
         $or: [
           {
-            from: requestData.address,
+            from: requestData.address.toLowerCase(),
           },
           {
-            to: requestData.address,
+            to: requestData.address.toLowerCase()//,
           },
         ],
       },
@@ -531,7 +531,7 @@ export default class Manger {
     }
     let data = [];
     let totalBalance = await Accounts.getAccountList(
-      { address: requestData.address },
+      { address: requestData.address.toLowerCase() },
       { address: 1, balance: 1 }
     );
     if (!totalBalance || !totalBalance.length) {
@@ -593,7 +593,7 @@ export default class Manger {
       // let currentBalance = coinMarketData.price;
 
       filteredData.filtered.map((transaction) => {
-        if (transaction.from == requestData.address) {
+        if (transaction.from.toLowerCase() === requestData.address.toLowerCase()) {
           fromAmount += Number(transaction.value);
         } else {
           toAmount += Number(transaction.value);

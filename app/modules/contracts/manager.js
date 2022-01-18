@@ -128,13 +128,13 @@ export default class ContractManager {
             keywords = res.keywords
         }
         const totalResult = await ContractModel.countData({
-                $or: [{address: {$regex: ".*" + keywords + ".*", $options: 'i'}},
+                $or: [{address: {$regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i'}},
                     {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
             }
         )
 
         const datas = await ContractModel.getContractList({
-            $or: [{address: {$regex: ".*" + keywords + ".*", $options: 'i'}},
+            $or: [{address: {$regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i'}},
                 {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
         }, "", skip, limit)
         return {"response": datas, "totalRecord": totalResult}
@@ -272,7 +272,7 @@ export default class ContractManager {
         if (req.body.keywords) {
             queryStr = {
                 $or: [
-                    {"hash": {'$regex': req.body.keywords, '$options': 'i'}}
+                    {"hash": {'$regex': req.body.keywords.toLowerCase(), '$options': 'i'}}
                 ],
                 "from": address
             }
