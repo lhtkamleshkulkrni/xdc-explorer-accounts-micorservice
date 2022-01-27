@@ -25,7 +25,8 @@ export default class ContractManager {
             "ERC": { "$gt": 0 },
             $or: [
                 { "address": { '$regex': req.searchKey, '$options': 'i' } },
-                { "tokenName": { '$regex': req.searchKey, '$options': 'i' } }
+                { "tokenName": { '$regex': req.searchKey, '$options': 'i' } },
+                { "symbol": { '$regex': req.searchKey, '$options': 'i' } }
             ]
         };
         let totalCount = await ContractModel.count(query);
@@ -35,7 +36,8 @@ export default class ContractManager {
             tokenName: 1,
             symbol: 1,
             totalSupply: 1,
-            decimals: 1
+            decimals: 1,
+            tokenImage: 1
         }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : { _id: -1 });
         // const resultArray = [];
         // for (let v of resultSet) {
