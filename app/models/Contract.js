@@ -11,6 +11,7 @@ const ContractSchema = new Schema({
     contractName: { type: String, default: "" },
     tokenName: { type: String, default: "" },
     symbol: { type: String, default: "" },
+    tokenImage: { type: String, default: "" },
     owner: { type: String, default: "" },
     decimals: { type: Number, default: "" },
     totalSupply: { type: Number, default: "" },
