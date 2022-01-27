@@ -10,7 +10,7 @@ import Utils from "../../utils";
 export default class ContractManager {
     async getTotalTokens() {
         Utils.lhtLog("ContractManager:getTotalTokens", "getTotalTokens count", "", "")
-        return await ContractModel.count({"ERC": {"$gt": 0}});
+        return await ContractModel.count({ "ERC": { "$gt": 0 } });
     }
 
     async getTotalContracts() {
@@ -22,10 +22,10 @@ export default class ContractManager {
         Utils.lhtLog("ContractManager:getListOfTokens", "getListOfTokens", req, "");
 
         const query = {
-            "ERC": {"$gt": 0},
+            "ERC": { "$gt": 0 },
             $or: [
-                {"address": {'$regex': req.searchKey, '$options': 'i'}},
-                {"tokenName": {'$regex': req.searchKey, '$options': 'i'}}
+                { "address": { '$regex': req.searchKey, '$options': 'i' } },
+                { "tokenName": { '$regex': req.searchKey, '$options': 'i' } }
             ]
         };
         let totalCount = await ContractModel.count(query);
@@ -36,7 +36,7 @@ export default class ContractManager {
             symbol: 1,
             totalSupply: 1,
             decimals: 1
-        }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : {_id: -1});
+        }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : { _id: -1 });
         // const resultArray = [];
         // for (let v of resultSet) {
         //     let holderCount = await TokenHolderModel.countDocuments({tokenContract: v.address});
@@ -67,7 +67,7 @@ export default class ContractManager {
         //         })
         //     }
         // }
-        return {tokens, totalCount};
+        return { tokens, totalCount };
     }
 
     async getListOfContracts(req, reqBody) {
@@ -89,14 +89,14 @@ export default class ContractManager {
             isActive: 1.0,
             isDeleted: 1.0,
         }
-        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), reqBody.sortKey ? reqBody.sortKey : {blockNumber: -1});
+        return await ContractModel.getContractList({}, selectionKey, parseInt(req.skip), parseInt(req.limit), reqBody.sortKey ? reqBody.sortKey : { blockNumber: -1 });
 
     }
 
     async contractDetailsUsingAddressResponse(req) {
         Utils.lhtLog("ContractManager:contractDetailsUsingAddressResponse", "contractDetailsUsingAddressResponse", req, "");
         let contractAddress = req.contractAddress.toLowerCase();
-        let contractResponse = await ContractModel.getContract({address: contractAddress});
+        let contractResponse = await ContractModel.getContract({ address: contractAddress });
         let response = {};
         let contractStatus = 'Unverified';
         if (!contractResponse) {
@@ -128,16 +128,16 @@ export default class ContractManager {
             keywords = res.keywords
         }
         const totalResult = await ContractModel.countData({
-                $or: [{address: {$regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i'}},
-                    {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
-            }
+            $or: [{ address: { $regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i' } },
+            { tokenName: { $regex: ".*" + keywords + ".*", $options: 'i' } }]
+        }
         )
 
         const datas = await ContractModel.getContractList({
-            $or: [{address: {$regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i'}},
-                {tokenName: {$regex: ".*" + keywords + ".*", $options: 'i'}}]
+            $or: [{ address: { $regex: ".*" + keywords.toLowerCase() + ".*", $options: 'i' } },
+            { tokenName: { $regex: ".*" + keywords + ".*", $options: 'i' } }]
         }, "", skip, limit)
-        return {"response": datas, "totalRecord": totalResult}
+        return { "response": datas, "totalRecord": totalResult }
     }
 
     async getListOfHoldersForToken(req) {
@@ -147,7 +147,7 @@ export default class ContractManager {
             tokenContract: tokenAddress
         };
         let responseCount = await TokenHolderModel.countDocuments(findObj);
-        let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.body.skip), parseInt(req.body.limit), req.body.sortKey ? req.body.sortKey : {balance: -1});
+        let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.body.skip), parseInt(req.body.limit), req.body.sortKey ? req.body.sortKey : { balance: -1 });
         /**
          A token which has the maximum no. of address for a particular contract address has the rank 1 and go on.
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
@@ -173,7 +173,7 @@ export default class ContractManager {
             }];
         });
 
-        return {data, responseCount}
+        return { data, responseCount }
 
     }
 
@@ -187,73 +187,73 @@ export default class ContractManager {
             [{
                 $match: {
                     $and: [
-                        {"timestamp": {"$gte": startTime, "$lte": endTime}},
-                        {"contract": req.params.address}
+                        { "timestamp": { "$gte": startTime, "$lte": endTime } },
+                        { "contract": req.params.address }
                     ]
                 }
             },
+            {
+                $group:
                 {
-                    $group:
-                        {
-                            _id:
-                                {
-                                    day: {
-                                        $dayOfMonth: {
-                                            "$add": [new Date(0), {"$multiply": [1000, "$timestamp"]}
-                                            ]
-                                        }
-                                    },
-                                    month: {
-                                        $month: {
-                                            "$add": [new Date(0), {"$multiply": [1000, "$timestamp"]}
-                                            ]
-                                        }
-                                    },
-                                    year: {
-                                        $year: {
-                                            "$add": [new Date(0), {"$multiply": [1000, "$timestamp"]}
-                                            ]
-                                        }
-                                    }
-                                },
-                            uniqueCount1: {$addToSet: "$to"},
-                            uniqueCount2: {$addToSet: "$from"},
-                            count: {$sum: 1},
-                            date: {
-                                $first: {
-                                    "$add": [new Date(0), {"$multiply": [1000, "$timestamp"]}
-                                    ]
-                                }
+                    _id:
+                    {
+                        day: {
+                            $dayOfMonth: {
+                                "$add": [new Date(0), { "$multiply": [1000, "$timestamp"] }
+                                ]
+                            }
+                        },
+                        month: {
+                            $month: {
+                                "$add": [new Date(0), { "$multiply": [1000, "$timestamp"] }
+                                ]
+                            }
+                        },
+                        year: {
+                            $year: {
+                                "$add": [new Date(0), { "$multiply": [1000, "$timestamp"] }
+                                ]
                             }
                         }
-                },
-
-                {$sort: {date: 1}},
-                {
-                    $project:
-                        {
-                            date:
-                                {
-                                    $dateToString: {format: "%Y-%m-%d", date: "$date"}
-                                },
-                            toCount: {$size: "$uniqueCount1"},
-                            fromCount: {$size: "$uniqueCount2"},
-                            // total:      {$add:[Number("$toCount"),Number("$fromCount")]},
-                            count: 1,
-                            _id: 0
+                    },
+                    uniqueCount1: { $addToSet: "$to" },
+                    uniqueCount2: { $addToSet: "$from" },
+                    count: { $sum: 1 },
+                    date: {
+                        $first: {
+                            "$add": [new Date(0), { "$multiply": [1000, "$timestamp"] }
+                            ]
                         }
+                    }
                 }
+            },
+
+            { $sort: { date: 1 } },
+            {
+                $project:
+                {
+                    date:
+                    {
+                        $dateToString: { format: "%Y-%m-%d", date: "$date" }
+                    },
+                    toCount: { $size: "$uniqueCount1" },
+                    fromCount: { $size: "$uniqueCount2" },
+                    // total:      {$add:[Number("$toCount"),Number("$fromCount")]},
+                    count: 1,
+                    _id: 0
+                }
+            }
             ])
 
         const resultArray = []
         if (responseHolder.length > 0)
             responseHolder.map((item) => {
-                resultArray.push({"date": item.date, "count": (item.toCount + item.fromCount)})
+                resultArray.push({ "date": item.date, "count": (item.toCount + item.fromCount) })
             });
         else {
             for (let index = numberOfDays; index > 0; index--) {
                 let startTime = parseInt(moment().subtract(index, "days").valueOf() / 1000);
-                resultArray.push({"date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0})
+                resultArray.push({ "date": moment.unix(startTime).format("YYYY-MM-DD"), "count": 0 })
 
             }
         }
@@ -272,15 +272,15 @@ export default class ContractManager {
         if (req.body.keywords) {
             queryStr = {
                 $or: [
-                    {"hash": {'$regex': req.body.keywords.toLowerCase(), '$options': 'i'}}
+                    { "hash": { '$regex': req.body.keywords.toLowerCase(), '$options': 'i' } }
                 ],
                 "from": address
             }
         } else {
-            queryStr = {from: address}
+            queryStr = { from: address }
         }
 
-        let holderDetails = await TokenHolderModel.findOne({address: address});
+        let holderDetails = await TokenHolderModel.findOne({ address: address });
         let holderTransactions = await TransferTokenModel.find(queryStr, {
             hash: 1,
             timestamp: 1,
@@ -288,7 +288,7 @@ export default class ContractManager {
             from: 1,
             to: 1,
             value: 1
-        }).skip(skip).limit(limit).sort(req.body.sortKey ? req.body.sortKey : {value: -1});
+        }).skip(skip).limit(limit).sort(req.body.sortKey ? req.body.sortKey : { value: -1 });
         let holderTransactionsCount = await TransferTokenModel.countDocuments(queryStr);
         result.push({
             Holder_address: holderDetails && holderDetails.address,
@@ -318,19 +318,20 @@ export default class ContractManager {
                             tokenStatus: {
 
                                 "$add": [
-                                    {"$cond": [{"$ifNull": ["$compilerVersion", null]}, 1, 0]},
-                                    {"$cond": [{"$ifNull": ["$sourceCode", null]}, 1, 0]},
-                                    {"$cond": [{"$ifNull": ["$abi", null]}, 1, 0]},
+                                    { "$cond": [{ "$ifNull": ["$compilerVersion", null] }, 1, 0] },
+                                    { "$cond": [{ "$ifNull": ["$sourceCode", null] }, 1, 0] },
+                                    { "$cond": [{ "$ifNull": ["$abi", null] }, 1, 0] },
                                 ]
                             },
                         }
                     },
                     {
                         $match: {
-                            "ERC": {"$gt": 0},
+                            "ERC": { "$gt": 0 },
                             $or: [
-                                {address: {"$regex": reqObj.query.data.toLowerCase(), "$options": "i"}},
-                                {tokenName: {"$regex": reqObj.query.data, "$options": "i"}}
+                                { address: { "$regex": reqObj.query.data.toLowerCase(), "$options": "i" } },
+                                { tokenName: { "$regex": reqObj.query.data, "$options": "i" } },
+                                { symbol: { "$regex": reqObj.query.data, "$options": "i" } }
                             ]
                         },
 
@@ -343,19 +344,19 @@ export default class ContractManager {
                             "as": "tokenholders"
                         }
                     },
-                    {$skip: skip},
-                    {$limit: limit},
+                    { $skip: skip },
+                    { $limit: limit },
                     {
                         $project: {
                             _id: 1,
                             address: 1,
                             "type": "XRC20",
                             tokenName: 1,
-                            tokenHolders: {$size: "$tokenholders"},
+                            tokenHolders: { $size: "$tokenholders" },
                             totalSupply: 1,
                             symbol: 1,
                             decimals: 1,
-                            status: {$cond: {if: {$gte: ["$tokenStatus", 3]}, then: "verified", else: "unverified"}}
+                            status: { $cond: { if: { $gte: ["$tokenStatus", 3] }, then: "verified", else: "unverified" } }
                         }
                     }
                 ]);
@@ -363,7 +364,7 @@ export default class ContractManager {
         } catch (error) {
             console.log(error)
         }
-        return {resultSet, "total": resultSet.length}
+        return { resultSet, "total": resultSet.length }
     }
 
 }
