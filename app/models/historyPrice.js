@@ -6,6 +6,7 @@ const HistoryPriceData = new Schema({
   closingTime: { type: Number, default: 0 },
   highValueTime: { type: Number, default: 0 },
   lowValueTime: { type: Number, default: 0 },
+  tokenAddress: { type: String, default: '' },
 
   openingPrice: { type: Number, default: 0 },
   highestPrice: { type: Number, default: 0 },
