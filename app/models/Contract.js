@@ -44,6 +44,7 @@ ContractSchema.static({
     updateContract: function (findObj, updateObj) {
         return this.findOneAndUpdate(findObj, updateObj, {
             returnNewDocument: true,
+            new:true
         });
     },
 
