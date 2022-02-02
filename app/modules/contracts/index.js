@@ -102,4 +102,14 @@ export default class ContractController{
         }
         return Utils.response(response, tokenDetailResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
+
+    async updateContracts(request,response){
+        Utils.lhtLog("ContractController:updateContracts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
+        let [error, updateContractsResponse] = await Utils.parseResponse(new ContractManager().updateContracts(request.params ,request.body));
+        if (error) {
+            Utils.lhtLog("ContractController:updateContracts", "updateContractsResponse err", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, updateContractsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
 }

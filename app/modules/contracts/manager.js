@@ -369,4 +369,15 @@ export default class ContractManager {
         return { resultSet, "total": resultSet.length }
     }
 
+    async updateContracts(param ,requestData) {
+        Utils.lhtLog("ContractManager:updateContracts", "updateContracts start", "", "")
+        return await ContractModel.updateContract({address : param.contractAddress}, 
+            {
+                "website": requestData.website ? requestData.website : "",
+                "twitter": requestData.twitter ? requestData.twitter : "",
+                "telegram": requestData.telegram ? requestData.telegram : "",
+                "symbolUrl":requestData.symbolUrl ? requestData.symbolUrl : ""
+                }
+            );
+    }
 }
