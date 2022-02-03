@@ -371,7 +371,11 @@ export default class ContractManager {
 
     async updateContracts(param ,requestData) {
         Utils.lhtLog("ContractManager:updateContracts", "updateContracts start", "", "")
-        return await ContractModel.updateContract({address : param.contractAddress}, 
+        let contractAddress = param.contractAddress.toLowerCase();
+        let contractResponse = await ContractModel.getContract({ address: contractAddress });
+        if(!contractResponse)
+            throw `No address found`;
+        return await ContractModel.updateContract({address : contractAddress}, 
             {
                 "website": requestData.website ? requestData.website : "",
                 "twitter": requestData.twitter ? requestData.twitter : "",
