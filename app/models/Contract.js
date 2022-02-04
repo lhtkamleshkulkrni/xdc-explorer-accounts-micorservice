@@ -23,7 +23,6 @@ const ContractSchema = new Schema({
     website:{ type: String, default: "" },
     twitter:{ type: String, default: "" },
     telegram:{ type: String, default: "" },
-    symbolUrl:{ type: String, default: "" },
     createdOn: { type: Number, default: Date.now() },
     modifiedOn: { type: Number, default: Date.now() },
     isActive: { type: Boolean, default: true },
