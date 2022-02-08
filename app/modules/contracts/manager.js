@@ -380,7 +380,12 @@ export default class ContractManager {
                 "website": requestData.website ? requestData.website : "",
                 "twitter": requestData.twitter ? requestData.twitter : "",
                 "telegram": requestData.telegram ? requestData.telegram : "",
-                "tokenImage":requestData.symbolUrl ? requestData.symbolUrl : ""
+                "tokenImage":requestData.symbolUrl ? requestData.symbolUrl : "",
+                "email":requestData.email ? requestData.email : "" ,
+                "linkedIn":requestData.linkedIn ? requestData.linkedIn : "",
+                "reddit":requestData.reddit ? requestData.reddit : "",
+                "coinGecko":requestData.coinGecko ? requestData.coinGecko : "",
+                "description":requestData.description ? requestData.description : ""
                 }
             );
     }
