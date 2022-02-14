@@ -146,14 +146,16 @@ export default class ContractManager {
         let findObj = {
             tokenContract: tokenAddress
         };
-        let responseCountFrom = await TransferTokenModel.distinct("from",{contract:tokenAddress})
-        let responseCountTo = await TransferTokenModel.distinct("to",{contract:tokenAddress})
-        let responseCount = responseCountFrom.length + responseCountTo.length
+        let countFromHolder = await TransferTokenModel.distinct("from",{contract:tokenAddress})
+        let countToHolder = await TransferTokenModel.distinct("to",{contract:tokenAddress})
+        let responseCount = countFromHolder.length + countToHolder.length
         let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.body.skip), parseInt(req.body.limit), req.body.sortKey ? req.body.sortKey : { balance: -1 });
+
         /**
          A token which has the maximum no. of address for a particular contract address has the rank 1 and go on.
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
-         */
+        **/
+
         let total = 0;
         if (!req.body.sortKey)
             response.sort(function (a, b) {
