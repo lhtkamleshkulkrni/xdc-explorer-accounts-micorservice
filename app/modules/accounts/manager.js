@@ -113,7 +113,6 @@ export default class AccountManager {
       accountListRequest.sorting
     );
     const items = this.parseItems(itemsResponse);
-    console.log(items, "op");
     let total = await AccountModel.count(accountListRequest.requestData);
     let pages = Math.ceil(total / accountListRequest.limit);
     let currentPage =

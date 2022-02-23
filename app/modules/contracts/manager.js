@@ -164,7 +164,6 @@ export default class ContractManager {
                 return (Number(b.balance) / parseFloat(10 ** parseInt(contractResponse.decimals))) - (Number(a.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)));
             });
         }else{
-            console.log("i am triggered now")
             response.sort(function (a, b) {
                 return ( Number(a.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)))-(Number(b.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)));
             });
