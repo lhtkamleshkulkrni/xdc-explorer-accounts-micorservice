@@ -141,6 +141,7 @@ export default class ContractManager {
     }
 
     async getListOfHoldersForToken(req) {
+        
         Utils.lhtLog("ContractManager:getListOfHoldersForToken", "getListOfHoldersForToken", "", "");
         let tokenAddress = req.params.address.toLowerCase();
         let findObj = {
@@ -150,33 +151,43 @@ export default class ContractManager {
         let countToHolder = await TransferTokenModel.distinct("to",{contract:tokenAddress})
         let responseCount = countFromHolder.length + countToHolder.length
         let response = await TokenHolderModel.getHolderList(findObj, {}, parseInt(req.body.skip), parseInt(req.body.limit), req.body.sortKey ? req.body.sortKey : { balance: -1 });
-
+        let contractResponse = await ContractModel.getContract({ address: tokenAddress });
+        
         /**
-         A token which has the maximum no. of address for a particular contract address has the rank 1 and go on.
+         A token which has the maximu 2o. of address for a particular contract address has the rank 1 and go on.
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
-        **/
+        **/  
 
         let total = 0;
-        if (!req.body.sortKey)
+        if ( !req.body.sortKey ||req.body.sortKey["balance"] ===  -1 ){
             response.sort(function (a, b) {
-                return (Number(b.balance) / parseFloat(10 ** parseInt(b.decimals))) - (Number(a.balance) / parseFloat(10 ** parseInt(a.decimals)));
+                return (Number(b.balance) / parseFloat(10 ** parseInt(contractResponse.decimals))) - (Number(a.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)));
             });
+        }else{
+            console.log("i am triggered now")
+            response.sort(function (a, b) {
+                return ( Number(a.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)))-(Number(b.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)));
+            });
+        }
+        
+        
         response.map(function (t) {
             total += t.balance;
         });
 
         const data = response.map(function (t, index) {
-            t.percentage = (Number(t.balance) / parseFloat(10 ** parseInt(t.decimals))) / total;
-            t.quantity = (Number(t.balance) / parseFloat(10 ** parseInt(t.decimals)));
-            return [{
+            // console.log(typeof Number(t.balance),t.balance,"<<<<")
+           let percentage = (Number(t.balance) / parseFloat(10 ** parseInt(contractResponse.decimals))) / total;
+            let quantity = (Number(t.balance) / parseFloat(10 ** parseInt(contractResponse.decimals)));
+            return {
                 Rank: index + 1,
                 Address: t.address,
-                Quantity: t.quantity,
-                Percentage: t.percentage,
+                Quantity: quantity,
+                Percentage: percentage,
                 Value: t.balance,
-            }];
+            };
         });
-
+        // console.log(data,"data")
         return { data, responseCount }
 
     }

@@ -19,7 +19,23 @@ export default class Utils {
       },
     });
   }
-
+  static responseForAccountList(res, data, message, success, code) {
+    const responseObj = {
+      total: data.total,
+      pages: data.pages,
+      currentPage: data.currentPage,
+      perPage: data.perPage,
+      items: data.items,
+      message: message,
+      success: success,
+      responseCode: code,
+    };
+    res.format({
+      json: () => {
+        res.send(responseObj);
+      },
+    });
+  }
   static responseForValidation(res, errorArray, success, code = 400) {
     const responseObj = {
       message: "Invalid Request",
