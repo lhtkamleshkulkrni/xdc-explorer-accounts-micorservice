@@ -70,7 +70,7 @@ export default class AccountManager {
 
   async getAccountList(requestData) {
     if (!requestData) requestData = {};
-    const accountListRequest = this.parseGetContractListRequest(requestData);
+    const accountListRequest = this.parseAccountListRequest(requestData);
     if (requestData.percentage) {
       const totalSupply = await this.getCoinMarketTotalSupply();
       const balanceStart = ((requestData.percentage - 25) * totalSupply) / 100;
@@ -171,6 +171,47 @@ export default class AccountManager {
       { timestamp: -1 }
     );
   }
+
+  parseAccountListRequest = (requestObj) => {
+    if (!requestObj) return {};
+    let skip = 0;
+    if (requestObj.skip || requestObj.skip === 0) {
+      skip = requestObj.skip;
+      delete requestObj.skip;
+    }
+    let limit = 0;
+    if (requestObj.limit) {
+      limit = requestObj.limit;
+      delete requestObj.limit;
+    }
+    let sorting = "";
+    if (requestObj.sortKey) {
+      sorting = { [requestObj.sortKey]: requestObj.sortType || -1 };
+      delete requestObj.sortKey;
+      delete requestObj.sortType;
+    }
+    let selectionKeys = "";
+    if (requestObj.selectionKeys) {
+      selectionKeys = requestObj.selectionKeys;
+      delete requestObj.selectionKeys;
+    }
+    let searchQuery = [];
+    if (
+        requestObj.searchKeys &&
+        requestObj.searchValue &&
+        Array.isArray(requestObj.searchKeys) &&
+        requestObj.searchKeys.length
+    ) {
+      requestObj.searchKeys.map((searchKey) => {
+        let searchRegex = { $regex: requestObj.searchValue, $options: "i" };
+        searchQuery.push({ [searchKey]: searchRegex });
+      });
+      requestObj["$or"] = searchQuery;
+    }
+    if (requestObj.searchKeys) delete requestObj.searchKeys;
+    if (requestObj.searchValue) delete requestObj.searchValue;
+    return { requestData: requestObj, skip, limit, sorting, selectionKeys };
+  };
 
   parseGetContractListRequest = (requestObj) => {
     if (!requestObj) return {};
