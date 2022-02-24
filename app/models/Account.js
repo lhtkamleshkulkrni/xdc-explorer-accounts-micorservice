@@ -10,8 +10,11 @@ const AccountSchema = new Schema({
   modifiedOn: { type: Number, default: Date.now() },
   isDeleted: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
+  rewardCount: { type: Number, default: 0 },
+  minedBlock: { type: Number, default: 0 },
+  logCount: { type: Number, default: 0 },
 });
-
+// moment(1642914151043).toISOString() 
 AccountSchema.method({
   saveData: async function () {
     return await this.save();
