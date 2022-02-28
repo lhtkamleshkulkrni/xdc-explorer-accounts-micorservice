@@ -98,6 +98,10 @@ module.exports = (app) => {
     ValidationManger.validateSomeDayAccounts,
     new ContractController().someDaysHolders
   );
+  app.get(
+    "/getListOfTokenForAddress/:address",
+    new ContractController().getListOfTokenForAddress
+  );
   // app.get("/totalHoldersForToken", ValidationManger.validateUserLogin, new TestModule().testRoute);
 
   app.post(
