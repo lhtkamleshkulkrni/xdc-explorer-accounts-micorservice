@@ -13,6 +13,11 @@ export default class ContractManager {
         return await ContractModel.count({ "ERC": { "$gt": 0 } });
     }
 
+    async getListOfTokenForAddress(req) {
+        Utils.lhtLog("ContractManager:getListOfTokenForAddress", "getListOfTokenForAddress List", req, "")
+        return  TokenHolderModel.find({"address": req.address});
+    }
+    
     async getTotalContracts() {
         Utils.lhtLog("ContractManager:getTotalContracts", "getTotalContracts count", "", "")
         return await ContractModel.count();
