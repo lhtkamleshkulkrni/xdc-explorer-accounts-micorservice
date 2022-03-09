@@ -14,8 +14,43 @@ export default class ContractManager {
     }
 
     async getListOfTokenForAddress(req) {
+        let addressToken = req.address.toLowerCase();
+        const query = {
+            "ERC": { "$gt": 0 },
+            $or: [
+                { "address": addressToken },
+                { "owner": addressToken}
+            ]
+        };
         Utils.lhtLog("ContractManager:getListOfTokenForAddress", "getListOfTokenForAddress List", req, "")
-        return  TokenHolderModel.find({"address": req.address});
+        let tokenHolderTableData = await TokenHolderModel.find({"address": addressToken})
+        let holderResponse = []
+        if(tokenHolderTableData.length ===0){
+          let data
+          = await ContractModel.getContractList(query,{
+            address: 1,
+            holdersCount: 1,
+            tokenName: 1,
+            symbol: 1,
+            totalSupply: 1,
+            decimals: 1,
+            ERC:1
+         }, parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : { _id: -1 })
+         let holderTableResponse = []
+          for (let element of data){
+            let findObj = {
+                "address": element.owner, 
+                "tokenContract" : element.address
+            };
+            let xdc = await TokenHolderModel.getHolderList(findObj,"","",1,"")
+           let balance = xdc && xdc.length>0 && xdc[0].balance ? xdc[0].balance : 0
+    
+         holderTableResponse.push({...element._doc , "balance" : balance});
+        }
+         return holderTableResponse
+        }else{
+            return tokenHolderTableData
+        }
     }
     
     async getTotalContracts() {
