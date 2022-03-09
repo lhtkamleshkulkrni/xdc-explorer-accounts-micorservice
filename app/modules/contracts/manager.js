@@ -42,8 +42,8 @@ export default class ContractManager {
                 "address": element.owner, 
                 "tokenContract" : element.address
             };
-            let xdc = await TokenHolderModel.getHolderList(findObj,"","",1,"")
-           let balance = xdc && xdc.length>0 && xdc[0].balance ? xdc[0].balance : 0
+            let tokenHolderData = await TokenHolderModel.getHolderList(findObj,"","",1,"")
+           let balance = tokenHolderData && tokenHolderData.length>0 && tokenHolderData[0].balance ? tokenHolderData[0].balance : 0
     
          holderTableResponse.push({...element._doc , "balance" : balance});
         }
