@@ -32,7 +32,48 @@ export default class ContractManager {
     let tokenHolderTableData = await TokenHolderModel.find({
       address: addressToken,
     });
-    let holderResponse = [];
+    let tokenHolderTableResponse = [];
+    for (let element of tokenHolderTableData) {
+      let findObj = {
+        ERC: { $gt: 0 },
+        $or: [
+          { address: element.tokenContract },
+          { owner: element.tokenContract },
+        ],
+      };
+      let dataResponseContract = await ContractModel.getContractList(
+        findObj,
+        {
+          address: 1,
+          holdersCount: 1,
+          tokenName: 1,
+          symbol: 1,
+          totalSupply: 1,
+          decimals: 1,
+          ERC: 1,
+          tokenImage:1,
+        },
+        "",
+        1,
+        ""
+      );
+      
+    //   let tokenImages = dataResponseContract[0] && dataResponseContract[0].tokenImage ? dataResponseContract[0].tokenImage :""
+      let holderDetails = {
+        address: dataResponseContract[0].address,
+        holdersCount: dataResponseContract[0].holdersCount,
+        tokenName: dataResponseContract[0].tokenName,
+        symbol: dataResponseContract[0].symbol,
+        totalSupply: dataResponseContract[0].totalSupply,
+        decimals: dataResponseContract[0].decimals,
+        ERC: dataResponseContract[0].ERC,
+        tokenImage: dataResponseContract[0].tokenImage,
+        tokenContract:element.tokenContract,
+        balance:element.balance,
+        
+      }
+      tokenHolderTableResponse.push(holderDetails)
+    }
     if (tokenHolderTableData.length === 0) {
       let data = await ContractModel.getContractList(
         query,
@@ -44,11 +85,9 @@ export default class ContractManager {
           totalSupply: 1,
           decimals: 1,
           ERC: 1,
+          tokenImage:1
         },
-        parseInt(req.skip),
-        parseInt(req.limit),
-        req.sortKey ? req.sortKey : { _id: -1 }
-      );
+        parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : { _id: -1 }      );
       let holderTableResponse = [];
       for (let element of data) {
         let findObj = {
@@ -73,7 +112,7 @@ export default class ContractManager {
       }
       return holderTableResponse;
     } else {
-      return tokenHolderTableData;
+      return tokenHolderTableResponse;
     }
   }
 
