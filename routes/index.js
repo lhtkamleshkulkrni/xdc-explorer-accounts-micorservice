@@ -79,6 +79,11 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
+  app.post(
+    "/update-contracts/:contractAddress",
+    ValidationManger.validateContractAddress,
+    new ContractController().updateContracts
+  );
 
   /*
     Holder APIs
@@ -138,4 +143,9 @@ module.exports = (app) => {
   );
 
   app.get("/token-info/:symbol", new AnalyticsController().getTokenInfo);
+
+  app.get(
+    "/migrate-transfer-count",
+    new ContractController().migrateTokenTransfer
+  );
 };

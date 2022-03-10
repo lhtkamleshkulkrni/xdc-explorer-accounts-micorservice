@@ -129,13 +129,18 @@ export default class ContractManager {
   async getListOfTokens(req) {
     Utils.lhtLog("ContractManager:getListOfTokens", "getListOfTokens", req, "");
 
-    const query = {
-      ERC: { $gt: 0 },
+    let query = {
       $or: [
         { address: { $regex: req.searchKey, $options: "i" } },
         { tokenName: { $regex: req.searchKey, $options: "i" } },
+        { symbol: { $regex: req.searchKey, $options: "i" } },
       ],
     };
+    if (req.isERC) {
+      query["ERC"] = 721;
+    } else {
+      query["$and"] = [{ ERC: { $gt: 0 } }, { ERC: { $ne: 721 } }];
+    }
     let totalCount = await ContractModel.count(query);
     let tokens = await ContractModel.getContractList(
       query,
@@ -146,6 +151,9 @@ export default class ContractManager {
         symbol: 1,
         totalSupply: 1,
         decimals: 1,
+        tokenImage: 1,
+        transfers: 1,
+        description: 1,
       },
       parseInt(req.skip),
       parseInt(req.limit),
@@ -586,26 +594,54 @@ export default class ContractManager {
     }
     return { resultSet, total: resultSet.length };
   }
-  parsetokenContracts(items) {
-    return items.map((row, index) => {
-      const newItemResponse = {
-        hash: row.address,
-        balance: row.balance,
-        balanceNumber: row.balance / 100000000000000000,
-        code: "0x",
-        createdAt: moment(row.createdOn).toISOString(),
-        isToken: false,
-        status: true,
-        updatedAt: moment(row.modifiedOn).toISOString(),
-        logCount: 0,
-        minedBlock: 0,
-        rewardCount: 0,
-        percentage: "",
-        rank: index + 1,
-        accountName: null,
-      };
 
-      return newItemResponse;
+  async updateContracts(param, requestData) {
+    Utils.lhtLog(
+      "ContractManager:updateContracts",
+      "updateContracts start",
+      "",
+      ""
+    );
+    let contractAddress = param.contractAddress.toLowerCase();
+    let contractResponse = await ContractModel.getContract({
+      address: contractAddress,
     });
+    if (!contractResponse) throw `No address found`;
+    return await ContractModel.updateContract(
+      { address: contractAddress },
+      {
+        website: requestData.website ? requestData.website : "",
+        twitter: requestData.twitter ? requestData.twitter : "",
+        telegram: requestData.telegram ? requestData.telegram : "",
+        tokenImage: requestData.symbolUrl ? requestData.symbolUrl : "",
+        email: requestData.email ? requestData.email : "",
+        linkedIn: requestData.linkedIn ? requestData.linkedIn : "",
+        reddit: requestData.reddit ? requestData.reddit : "",
+        coinGecko: requestData.coinGecko ? requestData.coinGecko : "",
+        description: requestData.description ? requestData.description : "",
+      }
+    );
   }
+
+  migrateTokenTransfer = async () => {
+    let query = {
+      ERC: { $gt: 0 },
+    };
+    let tokens = await ContractModel.find(query, {
+      address: 1,
+    });
+    for (const token of tokens) {
+      let totalTransfers = await TransferTokenModel.find({
+        contract: token.address,
+      }).count();
+      await ContractModel.findOneAndUpdate(query, {
+        transfers: {
+          total: totalTransfers,
+          last24Hour: 0,
+          last3days: 0,
+        },
+      });
+    }
+    return true;
+  };
 }
