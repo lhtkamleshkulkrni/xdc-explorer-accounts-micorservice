@@ -36,6 +36,8 @@ module.exports = (app) => {
     ValidationManger.validateLatestAccounts,
     new AccountController().getLatestAccounts
   );
+  app.post("/accounts-list", new AccountController().getAccountList);
+  app.post("/getListOfAccounts", new AccountController().getAccountListNew);
   app.get(
     "/getSomeDaysAccounts/:numberOfDays",
     ValidationManger.validateSomeDayAccounts,
@@ -46,9 +48,9 @@ module.exports = (app) => {
    * Token APIs
    */
   app.get("/getTotalTokens", new ContractController().getTotalTokens);
-  app.get(
+  app.post(
     "/getListOfTokens",
-    ValidationManger.validateLatestAccounts,
+    ValidationManger.validateSkipAndLimit,
     new ContractController().getListOfTokens
   ); // It Takes some time
   app.get(
@@ -62,7 +64,7 @@ module.exports = (app) => {
    * Contract APIs
    */
   app.get("/getTotalContracts", new ContractController().getTotalContracts);
-  app.get(
+  app.post(
     "/getListOfContracts",
     ValidationManger.validateLatestAccounts,
     new ContractController().getListOfContracts
@@ -77,16 +79,21 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
+  app.post(
+    "/update-contracts/:contractAddress",
+    ValidationManger.validateContractAddress,
+    new ContractController().updateContracts
+  );
 
   /*
     Holder APIs
     */
-  app.get(
+  app.post(
     "/getListOfHoldersForToken/:address",
-    ValidationManger.validateLatestAccounts,
+    ValidationManger.validateLatestAccountsPost,
     new ContractController().getListOfHoldersForToken
   );
-  app.get(
+  app.post(
     "/getHolderDetailsUsingAddress",
     ValidationManger.validateHolderDetailsUsingAddress,
     new ContractController().getHolderDetailsUsingAddress
@@ -95,6 +102,10 @@ module.exports = (app) => {
     "/someDaysHolders/:numberOfDays/:address",
     ValidationManger.validateSomeDayAccounts,
     new ContractController().someDaysHolders
+  );
+  app.get(
+    "/getListOfTokenForAddress/:address",
+    new ContractController().getListOfTokenForAddress
   );
   // app.get("/totalHoldersForToken", ValidationManger.validateUserLogin, new TestModule().testRoute);
 

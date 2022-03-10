@@ -16,6 +16,21 @@ module.exports = {
     });
     await validate(schema, req.query, res, next);
   },
+
+  validateLatestAccountsPost: async (req, res, next) => {
+    const schema = yup.object().shape({
+      skip: yup.string().required(),
+      limit: yup.string().required(),
+    });
+    await validate(schema, req.body, res, next);
+  },
+  validateSkipAndLimit: async (req, res, next) => {
+    const schema = yup.object().shape({
+      skip: yup.string().required(),
+      limit: yup.string().required(),
+    });
+    await validate(schema, req.body, res, next);
+  },
   validateSomeDayAccounts: async (req, res, next) => {
     const schema = yup.object().shape({
       numberOfDays: yup.string().required(),
@@ -34,7 +49,7 @@ module.exports = {
       limit: yup.string().required(),
       address: yup.string().required(),
     });
-    await validate(schema, req.query, res, next);
+    await validate(schema, req.body, res, next);
   },
   validateTokenNameAndAddress: async (req, res, next) => {
     const schema = yup.object().shape({

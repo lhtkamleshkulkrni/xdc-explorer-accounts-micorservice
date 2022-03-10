@@ -25,7 +25,7 @@ export default class ContractController{
 
     async getListOfTokens(request,response){
         Utils.lhtLog("ContractController:getListOfTokens", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
-        let [error, listOfTokensResponse] = await Utils.parseResponse(new ContractManager().getListOfTokens(request.query));
+        let [error, listOfTokensResponse] = await Utils.parseResponse(new ContractManager().getListOfTokens(request.body));
         if (error) {
             Utils.lhtLog("ContractController:getListOfTokens", "listOfTokensResponse err", error, "", "ERROR")
             return Utils.handleError([error], request, response);
@@ -35,7 +35,7 @@ export default class ContractController{
 
     async getListOfContracts(request,response){
         Utils.lhtLog("ContractController:getListOfContracts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
-        let [error, listOfContractsResponse] = await Utils.parseResponse(new ContractManager().getListOfContracts(request.query));
+        let [error, listOfContractsResponse] = await Utils.parseResponse(new ContractManager().getListOfContracts(request.query , request.body));
         if (error) {
             Utils.lhtLog("ContractController:getListOfContracts", "listOfContractsResponse err", error, "", "ERROR")
             return Utils.handleError([error], request, response);
@@ -93,6 +93,17 @@ export default class ContractController{
         return Utils.response(response, holderDetailsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
 
+    async getListOfTokenForAddress(request,response){
+       
+        Utils.lhtLog("ContractController:getListOfTokenForAddress", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
+        let [error, listOfTokenForAddressResponse] = await Utils.parseResponse(new ContractManager().getListOfTokenForAddress(request.params));
+        if (error) {
+            Utils.lhtLog("ContractController:getListOfTokenForAddress", "listOfTokenForAddressResponse err", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, listOfTokenForAddressResponse, apiSuccessMessage.TOTAL_TOKENS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
+
     async getTokenUsingTokenNameAndAddress(request,response){
         Utils.lhtLog("ContractController:getTokenUsingTokenNameAndAddress", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
         let [error, tokenDetailResponse] = await Utils.parseResponse(new ContractManager().getTokenUsingTokenNameAndAddress(request));
@@ -101,5 +112,15 @@ export default class ContractController{
             return Utils.handleError([error], request, response);
         }
         return Utils.response(response, tokenDetailResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
+
+    async updateContracts(request,response){
+        Utils.lhtLog("ContractController:updateContracts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
+        let [error, updateContractsResponse] = await Utils.parseResponse(new ContractManager().updateContracts(request.params ,request.body));
+        if (error) {
+            Utils.lhtLog("ContractController:updateContracts", "updateContractsResponse err", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, updateContractsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
 }

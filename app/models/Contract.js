@@ -3,6 +3,7 @@ let Schema = mongoose.Schema;
 
 const ContractSchema = new Schema({
     address: { type: String, default: "" },
+    holdersCount: { type: Number, default: 0 },
     blockNumber: { type: Number, default: 0 },
     status: { type: String, default: "Unverified" },
     ERC: { type: Number, index: true },
@@ -10,6 +11,7 @@ const ContractSchema = new Schema({
     contractName: { type: String, default: "" },
     tokenName: { type: String, default: "" },
     symbol: { type: String, default: "" },
+    tokenImage: { type: String, default: "" },
     owner: { type: String, default: "" },
     decimals: { type: Number, default: "" },
     totalSupply: { type: Number, default: "" },
@@ -18,6 +20,14 @@ const ContractSchema = new Schema({
     optimization: { type: Boolean, default: false },
     sourceCode: { type: String, default: "" },
     abi: { type: String, default: "" },
+    website:{ type: String, default: "" },
+    twitter:{ type: String, default: "" },
+    telegram:{ type: String, default: "" },
+    email:{ type: String, default: "" }, 
+    linkedIn:{ type: String, default: "" },
+    reddit:{ type: String, default: "" },
+    coinGecko:{ type: String, default: "" },
+    description:{ type: String, default: "" },
     createdOn: { type: Number, default: Date.now() },
     modifiedOn: { type: Number, default: Date.now() },
     isActive: { type: Boolean, default: true },
@@ -38,6 +48,7 @@ ContractSchema.static({
     updateContract: function (findObj, updateObj) {
         return this.findOneAndUpdate(findObj, updateObj, {
             returnNewDocument: true,
+            new:true
         });
     },
 
