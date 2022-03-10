@@ -143,4 +143,9 @@ module.exports = (app) => {
   );
 
   app.get("/token-info/:symbol", new AnalyticsController().getTokenInfo);
+
+  app.get(
+    "/migrate-transfer-count",
+    new ContractController().migrateTokenTransfer
+  );
 };
