@@ -306,6 +306,37 @@ export default class ContractController {
     );
   }
 
+  async getAccountByTranche(request, response) {
+
+    Utils.lhtLog(
+      "ContractController:getAccountByTranche",
+      "",
+      "",
+      "",
+      httpConstants.LOG_LEVEL_TYPE.INFO
+    );
+    let [error, accountByTranche] = await Utils.parseResponse(
+      new ContractManager().getAccountByTranche()
+    );
+    if (error) {
+      Utils.lhtLog(
+        "ContractController:getAccountByTranche",
+        "accountByTranche err",
+        error,
+        "",
+        "ERROR"
+      );
+      return Utils.handleError([error], request, response);
+    }
+    return Utils.response(
+      response,
+      accountByTranche,
+      apiSuccessMessage.ACCOUNT_BY_TRANCHE_FETCH_SUCCESFULLY,
+      httpConstants.RESPONSE_STATUS.SUCCESS,
+      httpConstants.RESPONSE_CODES.OK
+    );
+  }
+
   async getTokenUsingTokenNameAndAddress(request, response) {
     Utils.lhtLog(
       "ContractController:getTokenUsingTokenNameAndAddress",

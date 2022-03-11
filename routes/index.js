@@ -107,6 +107,10 @@ module.exports = (app) => {
     "/getListOfTokenForAddress/:address",
     new ContractController().getListOfTokenForAddress
   );
+  app.get(
+    "/api/accountByTranche",
+    new ContractController().getAccountByTranche
+  );
   // app.get("/totalHoldersForToken", ValidationManger.validateUserLogin, new TestModule().testRoute);
 
   app.post(
