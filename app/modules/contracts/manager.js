@@ -1,12 +1,21 @@
 import ContractModel from "../../models/Contract";
 import TokenHolderModel from "../../models/TokenHolder";
 import TransferTokenModel from "../../models/Transfer";
-
+import AccountTrancheModel from "../../models/AccountTranche";
 const moment = require("moment");
 
 import Utils from "../../utils";
 
 export default class ContractManager {
+  async getAccountByTranche() {
+    Utils.lhtLog(
+      "BLManager:getAccountByTranche",
+      "get getAccountByTranche ",
+      "",
+      ""
+    );
+    return await AccountTrancheModel.getAccountByTranche({});
+  }
   async getTotalTokens() {
     Utils.lhtLog(
       "ContractManager:getTotalTokens",
@@ -51,14 +60,14 @@ export default class ContractManager {
           totalSupply: 1,
           decimals: 1,
           ERC: 1,
-          tokenImage:1,
+          tokenImage: 1,
         },
         "",
         1,
         ""
       );
-      
-    //   let tokenImages = dataResponseContract[0] && dataResponseContract[0].tokenImage ? dataResponseContract[0].tokenImage :""
+
+      //   let tokenImages = dataResponseContract[0] && dataResponseContract[0].tokenImage ? dataResponseContract[0].tokenImage :""
       let holderDetails = {
         address: dataResponseContract[0].address,
         holdersCount: dataResponseContract[0].holdersCount,
@@ -68,11 +77,10 @@ export default class ContractManager {
         decimals: dataResponseContract[0].decimals,
         ERC: dataResponseContract[0].ERC,
         tokenImage: dataResponseContract[0].tokenImage,
-        tokenContract:element.tokenContract,
-        balance:element.balance,
-        
-      }
-      tokenHolderTableResponse.push(holderDetails)
+        tokenContract: element.tokenContract,
+        balance: element.balance,
+      };
+      tokenHolderTableResponse.push(holderDetails);
     }
     if (tokenHolderTableData.length === 0) {
       let data = await ContractModel.getContractList(
@@ -85,9 +93,12 @@ export default class ContractManager {
           totalSupply: 1,
           decimals: 1,
           ERC: 1,
-          tokenImage:1
+          tokenImage: 1,
         },
-        parseInt(req.skip), parseInt(req.limit), req.sortKey ? req.sortKey : { _id: -1 }      );
+        parseInt(req.skip),
+        parseInt(req.limit),
+        req.sortKey ? req.sortKey : { _id: -1 }
+      );
       let holderTableResponse = [];
       for (let element of data) {
         let findObj = {
