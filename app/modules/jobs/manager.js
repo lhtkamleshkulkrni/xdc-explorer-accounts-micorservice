@@ -1,8 +1,8 @@
 import Transfer from "../../models/Transfer";
 import Contract from "../../models/Contract";
-import CoinMasterModel from "../../models/coinMaster"
-import AccountTrancheModel from "../../models/AccountTranche"
-import AccountModel from "../../models/Account"
+import CoinMasterModel from "../../models/coinMaster";
+import AccountTrancheModel from "../../models/AccountTranche";
+import AccountModel from "../../models/Account";
 import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
 import TokenInfo from "../../models/tokenInfo";
@@ -12,10 +12,16 @@ import HTTPService from "../../service/http-service";
 import { httpConstants } from "../../common/constants";
 export default class BLManager {
   async syncAccountByTranche() {
-    let usdPrice = await CoinMasterModel.getCoinMarketCapList({
-      "fiatValue": "USD"
-  }, "", 0, 1, { _id:-1 });
-  let latestUsdPrice = usdPrice[0].quote[0].USD.price
+    let usdPrice = await CoinMasterModel.getCoinMarketCapList(
+      {
+        fiatValue: "USD",
+      },
+      "",
+      0,
+      1,
+      { _id: -1 }
+    );
+    let latestUsdPrice = usdPrice[0].quote[0].USD.price;
     let rangeArray = [
       { balanceFrom: 0, balanceTo: 4999 },
       { balanceFrom: 5000, balanceTo: 9999 },
@@ -62,11 +68,14 @@ export default class BLManager {
         index == rangeArray.length - 1
           ? { balanceFrom: balanceFrom }
           : { balanceFrom: balanceFrom, balanceTo: balanceTo };
-      let updateObj = {
-        accounts: response[0].accounts,
-        xdcBalance: response[0].xdcBalance,
-        usdBalance: response[0].xdcBalance * latestUsdPrice
-      };
+      let updateObj =
+        response && response.length > 0
+          ? {
+              accounts: response[0].accounts,
+              xdcBalance: response[0].xdcBalance,
+              usdBalance: response[0].xdcBalance * latestUsdPrice,
+            }
+          : {};
       await AccountTrancheModel.findOneAndUpdate(findObjTranche, updateObj);
     }
   }

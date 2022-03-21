@@ -15,8 +15,8 @@ AccountTrancheSchema.method({
   },
 });
 AccountTrancheSchema.static({
-    getAccountByTranche: function () {
-    return this.find({}).sort({"balanceFrom":1});
+    getAccountByTranche: function ({},sort) {
+    return this.find({}).sort(sort);
   },
   updateAccount: function (findObj, updateObj) {
     return this.findOneAndUpdate(findObj, updateObj, {

@@ -14,7 +14,7 @@ export default class ContractManager {
       "",
       ""
     );
-    return await AccountTrancheModel.getAccountByTranche({});
+    return await AccountTrancheModel.getAccountByTranche({},{"balanceFrom":1});
   }
   async getTotalTokens() {
     Utils.lhtLog(
