@@ -32,6 +32,10 @@ module.exports = (app) => {
     new AccountController().getAccountDetailsUsingAddress
   );
   app.get(
+    "/getAccountRanking/:address",
+    new AccountController().getAccountRanking
+  );
+  app.get(
     "/getLatestAccounts",
     ValidationManger.validateLatestAccounts,
     new AccountController().getLatestAccounts

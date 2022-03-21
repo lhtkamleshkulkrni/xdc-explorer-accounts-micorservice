@@ -1,6 +1,7 @@
 import AccountModel from "../../models/Account";
 import CoinMasterModel from "../../models/coinMaster";
 import HistoricalAccountModel from "../../models/HistoricalAccount";
+import TransactionModel from "../../models/transaction"
 import Utils from "../../utils";
 import moment from "moment";
 export default class AccountManager {
@@ -24,7 +25,24 @@ export default class AccountManager {
     );
     return await AccountModel.getAccount({ address: address });
   }
-
+  
+  async getAccountRanking(address) {
+    address = address.toLowerCase();
+    Utils.lhtLog(
+      "AccountManager:getAccountRanking",
+      "getAccountRanking",
+      address,
+      ""
+    );
+    let accountResponse =  await AccountModel.getAccount({ address: address });
+    let balance = accountResponse.balance
+    let accountsRicher = await AccountModel.getAccount({balance:{$gte:balance}}).count()
+    let accountsPoorer = await AccountModel.getAccount({balance:{$lte:balance}}).count()
+    const [fromCount, toCount] = await Promise.all([
+      TransactionModel.countDocuments({ from: address}),
+      TransactionModel.countDocuments({ to: address})]);
+    return {balance , accountsPoorer, accountsRicher, type:"account", account:address, transactions:fromCount+toCount}
+  }
   async getLatestAccounts(req) {
     Utils.lhtLog(
       "AccountManager:getLatestAccounts",
