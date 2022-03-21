@@ -15,8 +15,13 @@ AccountTrancheSchema.method({
   },
 });
 AccountTrancheSchema.static({
-    getAccountByTranche: function () {
-    return this.find({});
+    getAccountByTranche: function ({},sort) {
+    return this.find({}).sort(sort);
+  },
+  updateAccount: function (findObj, updateObj) {
+    return this.findOneAndUpdate(findObj, updateObj, {
+      returnNewDocument: true,
+    });
   },
 });
 module.exports = mongoose.model("xin-tranche", AccountTrancheSchema);
