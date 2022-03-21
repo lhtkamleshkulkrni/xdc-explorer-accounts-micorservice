@@ -1,5 +1,8 @@
 import Transfer from "../../models/Transfer";
 import Contract from "../../models/Contract";
+import CoinMasterModel from "../../models/coinMaster"
+import AccountTrancheModel from "../../models/AccountTranche"
+import AccountModel from "../../models/Account"
 import TokenAnalytics from "../../models/tokenAnalytics";
 import HistoryPrice from "../../models/historyPrice";
 import TokenInfo from "../../models/tokenInfo";
@@ -8,6 +11,65 @@ import moment from "moment";
 import HTTPService from "../../service/http-service";
 import { httpConstants } from "../../common/constants";
 export default class BLManager {
+  async syncAccountByTranche() {
+    let usdPrice = await CoinMasterModel.getCoinMarketCapList({
+      "fiatValue": "USD"
+  }, "", 0, 1, { _id:-1 });
+  let latestUsdPrice = usdPrice[0].quote[0].USD.price
+    let rangeArray = [
+      { balanceFrom: 0, balanceTo: 4999 },
+      { balanceFrom: 5000, balanceTo: 9999 },
+      { balanceFrom: 10000, balanceTo: 24999 },
+      { balanceFrom: 25000, balanceTo: 49999 },
+      { balanceFrom: 50000, balanceTo: 74999 },
+      { balanceFrom: 75000, balanceTo: 99999 },
+      { balanceFrom: 100000, balanceTo: 249999 },
+      { balanceFrom: 500000, balanceTo: 999999 },
+      { balanceFrom: 1000000, balanceTo: 1999999 },
+      { balanceFrom: 2000000, balanceTo: 2999999 },
+      { balanceFrom: 3000000, balanceTo: 3999999 },
+      { balanceFrom: 4000000, balanceTo: 4999999 },
+      { balanceFrom: 5000000, balanceTo: 9999999 },
+      { balanceFrom: 10000000, balanceTo: 19999999 },
+      { balanceFrom: 20000000, balanceTo: 49999999 },
+      { balanceFrom: 50000000, balanceTo: 99999999 },
+      { balanceFrom: 100000000, balanceTo: 499999999 },
+      { balanceFrom: 500000000, balanceTo: 999999999 },
+      { balanceFrom: 1000000000, balanceTo: null },
+    ];
+
+    for (let index = 0; index < rangeArray.length; index++) {
+      let balanceFrom = rangeArray[index].balanceFrom;
+      let balanceTo = rangeArray[index].balanceTo;
+      let findObj =
+        index == rangeArray.length - 1
+          ? { balance: { $gte: balanceFrom } }
+          : { balance: { $gte: balanceFrom, $lte: balanceTo } };
+
+      let response = await AccountModel.aggregate([
+        {
+          $match: findObj,
+        },
+        {
+          $group: {
+            _id: null,
+            xdcBalance: { $sum: "$balance" },
+            accounts: { $sum: 1 },
+          },
+        },
+      ]);
+      let findObjTranche =
+        index == rangeArray.length - 1
+          ? { balanceFrom: balanceFrom }
+          : { balanceFrom: balanceFrom, balanceTo: balanceTo };
+      let updateObj = {
+        accounts: response[0].accounts,
+        xdcBalance: response[0].xdcBalance,
+        usdBalance: response[0].xdcBalance * latestUsdPrice
+      };
+      await AccountTrancheModel.findOneAndUpdate(findObjTranche, updateObj);
+    }
+  }
   async generateTokenAnalytics() {
     let startTime = moment().subtract(1, "day").startOf("day").valueOf(),
       endTime = moment().subtract(1, "day").endOf("day").valueOf();
