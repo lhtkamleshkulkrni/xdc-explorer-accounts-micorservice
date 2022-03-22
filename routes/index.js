@@ -32,7 +32,7 @@ module.exports = (app) => {
     new AccountController().getAccountDetailsUsingAddress
   );
   app.get(
-    "/accountRanking/",
+    "/accountRanking",
     new AccountController().getAccountRanking
   );
   app.get(
