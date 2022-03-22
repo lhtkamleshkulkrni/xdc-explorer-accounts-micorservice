@@ -5,6 +5,8 @@ import Utils from "../../utils";
 import moment from "moment";
 import Web3 from "xdc3";
 import Config from '../../../config'
+import TransactionModel from "../../models/transaction";
+
 
 export default class AccountManager {
   async getTotalAccounts() {
@@ -26,6 +28,64 @@ export default class AccountManager {
       ""
     );
     return await AccountModel.getAccount({ address: address });
+  }
+
+  async getAccountRanking(req) {
+    let address = req.input.toLowerCase();
+    let zeroBalanceAccount = req.includeZeroBalanceAccounts;
+    Utils.lhtLog(
+        "AccountManager:getAccountRanking",
+        "getAccountRanking",
+        address,
+        ""
+    );
+
+    let accountResponse = await AccountModel.getAccount({ address: address });
+    let balance = accountResponse.balance;
+    let richerQuery = {
+      balance: { $gt: balance },
+    };
+    let poorerQuery = {
+      balance: { $lte: balance },
+    };
+    if (zeroBalanceAccount==="false") {
+      richerQuery = {
+        $and: [
+          {
+            balance: { $gt: balance },
+          },
+          {
+            balance: { $ne: 0 },
+          },
+        ],
+      };
+
+      poorerQuery = {
+        $and:[
+          {
+            balance: { $lte: balance },
+          },
+          {
+            balance: { $ne: 0 },
+          },
+        ]
+      }
+    }
+    let accountsRicher = await AccountModel.getAccount(richerQuery).count();
+    let accountsPoorer = await AccountModel.getAccount(poorerQuery).count();
+    const [fromCount, toCount] = await Promise.all([
+      TransactionModel.countDocuments({ from: address }),
+      TransactionModel.countDocuments({ to: address }),
+    ]);
+    balance=balance/1000000000000000000;
+    return {
+      balance,
+      accountsPoorer,
+      accountsRicher,
+      type: "account",
+      account: address,
+      transactions: fromCount + toCount,
+    };
   }
 
   async getLatestAccounts(req) {
