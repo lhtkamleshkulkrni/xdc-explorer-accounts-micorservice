@@ -3,6 +3,9 @@ import CoinMasterModel from "../../models/coinMaster";
 import HistoricalAccountModel from "../../models/HistoricalAccount";
 import Utils from "../../utils";
 import moment from "moment";
+import Web3 from "xdc3";
+import Config from '../../../config'
+
 export default class AccountManager {
   async getTotalAccounts() {
     Utils.lhtLog(
@@ -66,6 +69,25 @@ export default class AccountManager {
       parseInt(req.limit),
       { [sortKey]: sortType }
     );
+  }
+
+  async updateAccountBalance(req) {
+    let web3= new Web3(Config.WEBSOCKET_URL);
+    Utils.lhtLog("AccountManager:updateAccountBalance", "updateAccountBalance", req, "");
+    let accounts= await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {});
+    for(let index=0;index<accounts.length;index++){
+      let findObj={
+        address:accounts[index].address
+      };
+      let blockchainBalance=await  web3.eth.getBalance(accounts[index].address+"");
+      Utils.lhtLog("AccountManager:updateAccountBalance", "blockchainBalance", {index,blockchainBalance}, "");
+      let updateObj={
+        balance:blockchainBalance
+      }
+
+      let updateResponse=await AccountModel.updateAccount(findObj,updateObj)
+      Utils.lhtLog("AccountManager:updateAccountBalance", "updateResponse", updateResponse, "");
+    }
   }
 
   async getAccountList(requestData) {
