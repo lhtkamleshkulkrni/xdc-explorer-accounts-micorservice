@@ -40,6 +40,13 @@ module.exports = (app) => {
     ValidationManger.validateLatestAccounts,
     new AccountController().getLatestAccounts
   );
+
+  app.get(
+      "/updateAccountBalance",
+      ValidationManger.validateLatestAccounts,
+      new AccountController().updateAccountBalance
+  );
+
   app.post("/accounts-list", new AccountController().getAccountList);
   app.post("/getListOfAccounts", new AccountController().getAccountListNew);
   app.get(

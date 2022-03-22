@@ -1,11 +1,13 @@
 import AccountModel from "../../models/Account";
 import CoinMasterModel from "../../models/coinMaster";
 import HistoricalAccountModel from "../../models/HistoricalAccount";
-import TransactionModel from "../../models/transaction";
 import Utils from "../../utils";
-import Web3 from "xdc3";
 import moment from "moment";
-import Config from "../../../config";
+import Web3 from "xdc3";
+import Config from '../../../config'
+import TransactionModel from "../../models/transaction";
+
+
 export default class AccountManager {
   async getTotalAccounts() {
     Utils.lhtLog(
@@ -16,7 +18,7 @@ export default class AccountManager {
     );
     return await AccountModel.count();
   }
-  
+
   async getAccountDetailsUsingAddress(address) {
     address = address.toLowerCase();
     Utils.lhtLog(
@@ -32,10 +34,10 @@ export default class AccountManager {
     let address = req.input.toLowerCase();
     let zeroBalanceAccount = req.includeZeroBalanceAccounts;
     Utils.lhtLog(
-      "AccountManager:getAccountRanking",
-      "getAccountRanking",
-      address,
-      ""
+        "AccountManager:getAccountRanking",
+        "getAccountRanking",
+        address,
+        ""
     );
 
     let accountResponse = await AccountModel.getAccount({ address: address });
@@ -46,7 +48,7 @@ export default class AccountManager {
     let poorerQuery = {
       balance: { $lte: balance },
     };
-    if (!zeroBalanceAccount) {
+    if (zeroBalanceAccount==="false") {
       richerQuery = {
         $and: [
           {
@@ -75,6 +77,7 @@ export default class AccountManager {
       TransactionModel.countDocuments({ from: address }),
       TransactionModel.countDocuments({ to: address }),
     ]);
+    balance=balance/1000000000000000000;
     return {
       balance,
       accountsPoorer,
@@ -84,6 +87,7 @@ export default class AccountManager {
       transactions: fromCount + toCount,
     };
   }
+
   async getLatestAccounts(req) {
     Utils.lhtLog(
       "AccountManager:getLatestAccounts",
@@ -125,6 +129,25 @@ export default class AccountManager {
       parseInt(req.limit),
       { [sortKey]: sortType }
     );
+  }
+
+  async updateAccountBalance(req) {
+    let web3= new Web3(Config.WEBSOCKET_URL);
+    Utils.lhtLog("AccountManager:updateAccountBalance", "updateAccountBalance", req, "");
+    let accounts= await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {});
+    for(let index=0;index<accounts.length;index++){
+      let findObj={
+        address:accounts[index].address
+      };
+      let blockchainBalance=await  web3.eth.getBalance(accounts[index].address+"");
+      Utils.lhtLog("AccountManager:updateAccountBalance", "blockchainBalance", {index,blockchainBalance}, "");
+      let updateObj={
+        balance:blockchainBalance
+      }
+
+      let updateResponse=await AccountModel.updateAccount(findObj,updateObj)
+      Utils.lhtLog("AccountManager:updateAccountBalance", "updateResponse", updateResponse, "");
+    }
   }
 
   async getAccountList(requestData) {
@@ -256,10 +279,10 @@ export default class AccountManager {
     }
     let searchQuery = [];
     if (
-      requestObj.searchKeys &&
-      requestObj.searchValue &&
-      Array.isArray(requestObj.searchKeys) &&
-      requestObj.searchKeys.length
+        requestObj.searchKeys &&
+        requestObj.searchValue &&
+        Array.isArray(requestObj.searchKeys) &&
+        requestObj.searchKeys.length
     ) {
       requestObj.searchKeys.map((searchKey) => {
         let searchRegex = { $regex: requestObj.searchValue, $options: "i" };
