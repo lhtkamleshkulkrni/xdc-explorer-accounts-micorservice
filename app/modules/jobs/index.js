@@ -16,4 +16,9 @@ export default class JobController {
       console.log(err, "err");
     });
   }
+  static async syncAccountByTranche() {
+    await new BLManager().syncAccountByTranche().catch((err) => {
+      console.log(err, "err");
+    });
+  }
 }
