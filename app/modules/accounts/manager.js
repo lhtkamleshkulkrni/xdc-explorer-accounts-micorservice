@@ -1,9 +1,11 @@
 import AccountModel from "../../models/Account";
 import CoinMasterModel from "../../models/coinMaster";
 import HistoricalAccountModel from "../../models/HistoricalAccount";
-import TransactionModel from "../../models/transaction"
+import TransactionModel from "../../models/transaction";
 import Utils from "../../utils";
+import Web3 from "xdc3";
 import moment from "moment";
+import Config from "../../../config";
 export default class AccountManager {
   async getTotalAccounts() {
     Utils.lhtLog(
@@ -14,7 +16,7 @@ export default class AccountManager {
     );
     return await AccountModel.count();
   }
-
+  
   async getAccountDetailsUsingAddress(address) {
     address = address.toLowerCase();
     Utils.lhtLog(
@@ -25,23 +27,62 @@ export default class AccountManager {
     );
     return await AccountModel.getAccount({ address: address });
   }
-  
-  async getAccountRanking(address) {
-    address = address.toLowerCase();
+
+  async getAccountRanking(req) {
+    let address = req.input.toLowerCase();
+    let zeroBalanceAccount = req.includeZeroBalanceAccounts;
     Utils.lhtLog(
       "AccountManager:getAccountRanking",
       "getAccountRanking",
       address,
       ""
     );
-    let accountResponse =  await AccountModel.getAccount({ address: address });
-    let balance = accountResponse.balance
-    let accountsRicher = await AccountModel.getAccount({balance:{$gte:balance}}).count()
-    let accountsPoorer = await AccountModel.getAccount({balance:{$lte:balance}}).count()
+
+    let accountResponse = await AccountModel.getAccount({ address: address });
+    let balance = accountResponse.balance;
+    let richerQuery = {
+      balance: { $gt: balance },
+    };
+    let poorerQuery = {
+      balance: { $lte: balance },
+    };
+    if (!zeroBalanceAccount) {
+      richerQuery = {
+        $and: [
+          {
+            balance: { $gt: balance },
+          },
+          {
+            balance: { $ne: 0 },
+          },
+        ],
+      };
+
+      poorerQuery = {
+        $and:[
+          {
+            balance: { $lte: balance },
+          },
+          {
+            balance: { $ne: 0 },
+          },
+        ]
+      }
+    }
+    let accountsRicher = await AccountModel.getAccount(richerQuery).count();
+    let accountsPoorer = await AccountModel.getAccount(poorerQuery).count();
     const [fromCount, toCount] = await Promise.all([
-      TransactionModel.countDocuments({ from: address}),
-      TransactionModel.countDocuments({ to: address})]);
-    return {balance , accountsPoorer, accountsRicher, type:"account", account:address, transactions:fromCount+toCount}
+      TransactionModel.countDocuments({ from: address }),
+      TransactionModel.countDocuments({ to: address }),
+    ]);
+    return {
+      balance,
+      accountsPoorer,
+      accountsRicher,
+      type: "account",
+      account: address,
+      transactions: fromCount + toCount,
+    };
   }
   async getLatestAccounts(req) {
     Utils.lhtLog(
@@ -215,10 +256,10 @@ export default class AccountManager {
     }
     let searchQuery = [];
     if (
-        requestObj.searchKeys &&
-        requestObj.searchValue &&
-        Array.isArray(requestObj.searchKeys) &&
-        requestObj.searchKeys.length
+      requestObj.searchKeys &&
+      requestObj.searchValue &&
+      Array.isArray(requestObj.searchKeys) &&
+      requestObj.searchKeys.length
     ) {
       requestObj.searchKeys.map((searchKey) => {
         let searchRegex = { $regex: requestObj.searchValue, $options: "i" };

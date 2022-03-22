@@ -24,7 +24,7 @@ export default class AccountController{
     }
     async getAccountRanking(request,response){
         Utils.lhtLog("AccountController:getAccountRanking", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
-        let [error, accountDetailsResponse] = await Utils.parseResponse(new AccountManager().getAccountRanking(request.params.address));
+        let [error, accountDetailsResponse] = await Utils.parseResponse(new AccountManager().getAccountRanking(request.query));
         if (error) {
             Utils.lhtLog("AccountController:getAccountRanking", "accountRankingResponse end", error, "", "ERROR")
             return Utils.handleError([error], request, response);
@@ -68,5 +68,14 @@ export default class AccountController{
             return Utils.handleError([error], request, response);
         }
         return Utils.response(response, someDaysAccountsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+    }
+    async updateAccountBalance(request,response){
+        Utils.lhtLog("AccountController:getTotalAccounts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
+        let [error, getTotalAccountResponse] = await Utils.parseResponse(new AccountManager().updateAccountBalance(request.body))
+        if (error) {
+            Utils.lhtLog("AccountController:getTotalAccounts", "getTotalAccounts end", error, "", "ERROR")
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(response, getTotalAccountResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
 }
