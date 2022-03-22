@@ -134,7 +134,7 @@ export default class AccountManager {
   async updateAccountBalance(req) {
     let web3= new Web3(Config.WEBSOCKET_URL);
     Utils.lhtLog("AccountManager:updateAccountBalance", "updateAccountBalance", req, "");
-    let accounts= await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {_id:-1});
+    let accounts= await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {_id:1});
     for(let index=0;index<accounts.length;index++){
       let findObj={
         address:accounts[index].address
