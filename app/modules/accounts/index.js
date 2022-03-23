@@ -27,9 +27,9 @@ export default class AccountController{
         let [error, accountDetailsResponse] = await Utils.parseResponse(new AccountManager().getAccountRanking(request.query));
         if (error) {
             Utils.lhtLog("AccountController:getAccountRanking", "accountRankingResponse end", error, "", "ERROR")
-            return Utils.handleError([error], request, response);
+            return Utils.handleError({message:"Invalid Address"}, request, response);
         }
-        return Utils.response(response, accountDetailsResponse, apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
+        return Utils.response(response, accountDetailsResponse, apiSuccessMessage.ACCOUNT_RANKING_FETCH_SUCCESSFULLY, httpConstants.RESPONSE_STATUS.SUCCESS, httpConstants.RESPONSE_CODES.OK);
     }
     async getLatestAccounts(request,response){
         Utils.lhtLog("AccountController:getLatestAccounts", "", "", '', httpConstants.LOG_LEVEL_TYPE.INFO);
