@@ -43,15 +43,14 @@ export default class BLManager {
       { balanceFrom: 500000000, balanceTo: 999999999 },
       { balanceFrom: 1000000000, balanceTo: null },
     ];
-
+    let wei = 1000000000000000000;
     for (let index = 0; index < rangeArray.length; index++) {
       let balanceFrom = rangeArray[index].balanceFrom;
       let balanceTo = rangeArray[index].balanceTo;
       let findObj =
         index == rangeArray.length - 1
-          ? { balance: { $gte: balanceFrom } }
-          : { balance: { $gte: balanceFrom, $lte: balanceTo } };
-
+          ? { balance: { $gte: balanceFrom * wei } }
+          : { balance: { $gte: balanceFrom * wei, $lte: balanceTo * wei } };
       let response = await AccountModel.aggregate([
         {
           $match: findObj,
@@ -72,8 +71,8 @@ export default class BLManager {
         response && response.length > 0
           ? {
               accounts: response[0].accounts,
-              xdcBalance: response[0].xdcBalance,
-              usdBalance: response[0].xdcBalance * latestUsdPrice,
+              xdcBalance: response[0].xdcBalance/wei,
+              usdBalance: (response[0].xdcBalance * latestUsdPrice)/wei,
             }
           : {};
       await AccountTrancheModel.findOneAndUpdate(findObjTranche, updateObj);
