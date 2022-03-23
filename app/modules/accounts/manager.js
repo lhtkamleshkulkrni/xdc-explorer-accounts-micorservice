@@ -4,9 +4,8 @@ import HistoricalAccountModel from "../../models/HistoricalAccount";
 import Utils from "../../utils";
 import moment from "moment";
 import Web3 from "xdc3";
-import Config from '../../../config'
+import Config from "../../../config";
 import TransactionModel from "../../models/transaction";
-
 
 export default class AccountManager {
   async getTotalAccounts() {
@@ -29,15 +28,15 @@ export default class AccountManager {
     );
     return await AccountModel.getAccount({ address: address });
   }
-
   async getAccountRanking(req) {
     let address = req.input.toLowerCase();
     let zeroBalanceAccount = req.includeZeroBalanceAccounts;
+    let type = req.type;
     Utils.lhtLog(
-        "AccountManager:getAccountRanking",
-        "getAccountRanking",
-        address,
-        ""
+      "AccountManager:getAccountRanking",
+      "getAccountRanking",
+      address,
+      ""
     );
 
     let accountResponse = await AccountModel.getAccount({ address: address });
@@ -48,28 +47,158 @@ export default class AccountManager {
     let poorerQuery = {
       balance: { $lte: balance },
     };
-    if (zeroBalanceAccount==="false") {
-      richerQuery = {
-        $and: [
-          {
-            balance: { $gt: balance },
-          },
-          {
-            balance: { $ne: 0 },
-          },
-        ],
-      };
-
-      poorerQuery = {
-        $and:[
-          {
-            balance: { $lte: balance },
-          },
-          {
-            balance: { $ne: 0 },
-          },
-        ]
-      }
+    switch (type) {
+      case "account":
+        richerQuery = {
+          $and: [
+            {
+              balance: { $gt: balance },
+            },
+            {
+              accountType: 0,
+            },
+          ],
+        };
+        poorerQuery = {
+          $and: [
+            {
+              balance: { $lte: balance },
+            },
+            {
+              accountType: 0,
+            },
+          ],
+        };
+        if(zeroBalanceAccount === "false"){
+          richerQuery = {
+            $and: [
+              {
+                balance: { $gt: balance },
+              },
+              {
+                balance: { $ne: 0 },
+            },
+              {
+                accountType: 0,
+              },
+            ],
+          };
+          poorerQuery = {
+            $and: [
+              {
+                balance: { $lte: balance },
+              },
+              {
+                balance: { $ne: 0 },
+              },
+              {
+                accountType: 0,
+              },
+            ],
+          };  
+          break;
+        }
+        break;
+      case "contract":
+        richerQuery = {
+          $and: [
+            {
+              balance: { $gt: balance },
+            },
+            {
+              accountType: 1,
+            },
+          ],
+        };
+        poorerQuery = {
+          $and: [
+            {
+              balance: { $lte: balance },
+            },
+            {
+              accountType: 1,
+            },
+          ],
+        };
+        if(zeroBalanceAccount === "false"){
+          richerQuery = {
+            $and: [
+              {
+                balance: { $gt: balance },
+              },
+              {
+                balance: { $ne: 0 },
+              },
+              {
+                accountType: 1,
+              },
+            ],
+          };
+          poorerQuery = {
+            $and: [
+              {
+                balance: { $lte: balance },
+              },
+              {
+                balance: { $ne: 0 },
+              },
+              {
+                accountType: 1,
+              },
+            ],
+          };
+          break;
+        }
+        break;
+      default:
+        richerQuery = {
+          $and: [
+            {
+              balance: { $gt: balance },
+            },
+            {
+              accountType: 0,
+            },
+          ],
+        };
+        poorerQuery = {
+          $and: [
+            {
+              balance: { $lte: balance },
+            },
+            {
+              accountType: 0,
+            },
+          ],
+        };
+        if(zeroBalanceAccount === "false"){
+          richerQuery = {
+            $and: [
+              {
+                balance: { $gt: balance },
+              },
+              {
+                balance: { $ne: 0 },
+              },
+              {
+                accountType: 0,
+              },
+            ],
+          };
+          poorerQuery = {
+            $and: [
+              {
+                balance: { $lte: balance },
+              },
+              {
+                balance: { $ne: 0 },
+              },
+              {
+                accountType: 0,
+              },
+            ],
+          };
+        }
     }
     let accountsRicher = await AccountModel.getAccount(richerQuery).count();
     let accountsPoorer = await AccountModel.getAccount(poorerQuery).count();
@@ -77,12 +206,12 @@ export default class AccountManager {
       TransactionModel.countDocuments({ from: address }),
       TransactionModel.countDocuments({ to: address }),
     ]);
-    balance=balance/1000000000000000000;
+    balance = balance / 1000000000000000000;
     return {
       balance,
       accountsPoorer,
       accountsRicher,
-      type: "account",
+      type: type || "account  ",
       account: address,
       transactions: fromCount + toCount,
     };
@@ -132,21 +261,44 @@ export default class AccountManager {
   }
 
   async updateAccountBalance(req) {
-    let web3= new Web3(Config.WEBSOCKET_URL);
-    Utils.lhtLog("AccountManager:updateAccountBalance", "updateAccountBalance", req, "");
-    let accounts= await AccountModel.getAccountList({}, "", parseInt(req.skip), parseInt(req.limit), {_id:1});
-    for(let index=0;index<accounts.length;index++){
-      let findObj={
-        address:accounts[index].address
+    let web3 = new Web3(Config.WEBSOCKET_URL);
+    Utils.lhtLog(
+      "AccountManager:updateAccountBalance",
+      "updateAccountBalance",
+      req,
+      ""
+    );
+    let accounts = await AccountModel.getAccountList(
+      {},
+      "",
+      parseInt(req.skip),
+      parseInt(req.limit),
+      { _id: 1 }
+    );
+    for (let index = 0; index < accounts.length; index++) {
+      let findObj = {
+        address: accounts[index].address,
       };
-      let blockchainBalance=await  web3.eth.getBalance(accounts[index].address+"");
-      Utils.lhtLog("AccountManager:updateAccountBalance", "blockchainBalance", {index,blockchainBalance}, "");
-      let updateObj={
-        balance:blockchainBalance
-      }
+      let blockchainBalance = await web3.eth.getBalance(
+        accounts[index].address + ""
+      );
+      Utils.lhtLog(
+        "AccountManager:updateAccountBalance",
+        "blockchainBalance",
+        { index, blockchainBalance },
+        ""
+      );
+      let updateObj = {
+        balance: blockchainBalance,
+      };
 
-      let updateResponse=await AccountModel.updateAccount(findObj,updateObj)
-      Utils.lhtLog("AccountManager:updateAccountBalance", "updateResponse", updateResponse, "");
+      let updateResponse = await AccountModel.updateAccount(findObj, updateObj);
+      Utils.lhtLog(
+        "AccountManager:updateAccountBalance",
+        "updateResponse",
+        updateResponse,
+        ""
+      );
     }
   }
 
@@ -279,10 +431,10 @@ export default class AccountManager {
     }
     let searchQuery = [];
     if (
-        requestObj.searchKeys &&
-        requestObj.searchValue &&
-        Array.isArray(requestObj.searchKeys) &&
-        requestObj.searchKeys.length
+      requestObj.searchKeys &&
+      requestObj.searchValue &&
+      Array.isArray(requestObj.searchKeys) &&
+      requestObj.searchKeys.length
     ) {
       requestObj.searchKeys.map((searchKey) => {
         let searchRegex = { $regex: requestObj.searchValue, $options: "i" };
