@@ -19,6 +19,13 @@ export default class Utils {
       },
     });
   }
+  static responseForAccountRanking(res, data, message, success, code) {
+    res.format({
+      json: () => {
+        res.send(data);
+      },
+    });
+  }
   static responseForAccountList(res, data, message, success, code) {
     const responseObj = {
       total: data.total,
@@ -58,14 +65,32 @@ export default class Utils {
     const msg = err.message
       ? err.message
       : err
-      ? err
-      : apiFailureMessage.INTERNAL_SERVER_ERROR;
+        ? err
+        : apiFailureMessage.INTERNAL_SERVER_ERROR;
     const code = err.code
       ? err.code
       : httpConstants.RESPONSE_CODES.SERVER_ERROR;
     this.response(res, {}, msg, httpConstants.RESPONSE_STATUS.FAILURE, code);
   }
-
+  static handleErrorForAccountRanking(err, req, res) {
+    if (!res) {
+      return false;
+    }
+    err = err || {};
+    const message = err.message
+      ? err.message
+      : err
+        ? err
+        : apiFailureMessage.INTERNAL_SERVER_ERROR;
+    const responseObj = {
+      message
+    };
+    res.format({
+      json: () => {
+        res.send(responseObj);
+      },
+    });
+  }
   /**
    * This function is made to handle success and error callback!
    * @param promise

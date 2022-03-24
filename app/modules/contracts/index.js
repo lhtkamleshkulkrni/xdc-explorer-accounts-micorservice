@@ -326,9 +326,9 @@ export default class ContractController {
         "",
         "ERROR"
       );
-      return Utils.handleError([error], request, response);
+      return Utils.handleErrorForAccountRanking([error], request, response);
     }
-    return Utils.response(
+    return Utils.responseForAccountRanking(
       response,
       accountByTranche,
       apiSuccessMessage.ACCOUNT_BY_TRANCHE_FETCH_SUCCESFULLY,
