@@ -124,10 +124,6 @@ module.exports = (app) => {
   );
   // app.get("/totalHoldersForToken", ValidationManger.validateUserLogin, new TestModule().testRoute);
   app.post(
-    "/updateAccountBalance",
-    new AccountController().updateAccountBalance
-  );
-  app.post(
     "/get-token-balance",
     ValidationManger.validateGetTokeBalance,
     new AnalyticsController().getTokenBalance
