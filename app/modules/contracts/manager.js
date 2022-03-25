@@ -630,6 +630,7 @@ export default class ContractManager {
         reddit: requestData.reddit ? requestData.reddit : "",
         coinGecko: requestData.coinGecko ? requestData.coinGecko : "",
         description: requestData.description ? requestData.description : "",
+        facebook:  requestData.facebook ? requestData.facebook : "",
       }
     );
   }
