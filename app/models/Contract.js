@@ -32,6 +32,7 @@ const ContractSchema = new Schema({
   linkedIn: { type: String, default: "" },
   reddit: { type: String, default: "" },
   coinGecko: { type: String, default: "" },
+  facebook: { type: String, default: "" },
   description: { type: String, default: "" },
   createdOn: { type: Number, default: Date.now() },
   modifiedOn: { type: Number, default: Date.now() },
