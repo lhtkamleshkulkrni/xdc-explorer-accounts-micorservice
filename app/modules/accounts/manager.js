@@ -69,7 +69,7 @@ export default class AccountManager {
             },
           ],
         };
-        if(zeroBalanceAccount === "false"){
+        if (zeroBalanceAccount === "false") {
           richerQuery = {
             $and: [
               {
@@ -77,7 +77,7 @@ export default class AccountManager {
               },
               {
                 balance: { $ne: 0 },
-            },
+              },
               {
                 accountType: 0,
               },
@@ -95,7 +95,7 @@ export default class AccountManager {
                 accountType: 0,
               },
             ],
-          };  
+          };
           break;
         }
         break;
@@ -120,7 +120,7 @@ export default class AccountManager {
             },
           ],
         };
-        if(zeroBalanceAccount === "false"){
+        if (zeroBalanceAccount === "false") {
           richerQuery = {
             $and: [
               {
@@ -171,7 +171,7 @@ export default class AccountManager {
             },
           ],
         };
-        if(zeroBalanceAccount === "false"){
+        if (zeroBalanceAccount === "false") {
           richerQuery = {
             $and: [
               {
