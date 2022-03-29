@@ -14,7 +14,7 @@ export default class ContractManager {
       "",
       ""
     );
-    return await AccountTrancheModel.getAccountByTranche({},{"balanceFrom":1});
+    return await AccountTrancheModel.getAccountByTranche({}, { "balanceFrom": 1 });
   }
   async getTotalTokens() {
     Utils.lhtLog(
@@ -114,8 +114,8 @@ export default class ContractManager {
         );
         let balance =
           tokenHolderData &&
-          tokenHolderData.length > 0 &&
-          tokenHolderData[0].balance
+            tokenHolderData.length > 0 &&
+            tokenHolderData[0].balance
             ? tokenHolderData[0].balance
             : 0;
 
@@ -352,37 +352,31 @@ export default class ContractManager {
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
         **/
 
-    let total = 0;
     if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
       response.sort(function (a, b) {
         return (
           Number(b.balance) /
-            parseFloat(10 ** parseInt(contractResponse.decimals)) -
+          parseFloat(10 ** parseInt(contractResponse.decimals)) -
           Number(a.balance) /
-            parseFloat(10 ** parseInt(contractResponse.decimals))
+          parseFloat(10 ** parseInt(contractResponse.decimals))
         );
       });
     } else {
       response.sort(function (a, b) {
         return (
           Number(a.balance) /
-            parseFloat(10 ** parseInt(contractResponse.decimals)) -
+          parseFloat(10 ** parseInt(contractResponse.decimals)) -
           Number(b.balance) /
-            parseFloat(10 ** parseInt(contractResponse.decimals))
+          parseFloat(10 ** parseInt(contractResponse.decimals))
         );
       });
-    }
-
-    response.map(function (t) {
-      total += t.balance;
-    });
-
+    }  
+    let totalSupply = contractResponse.totalSupply
     const data = response.map(function (t, index) {
-      // console.log(typeof Number(t.balance),t.balance,"<<<<")
       let percentage =
-        Number(t.balance) /
-        parseFloat(10 ** parseInt(contractResponse.decimals)) /
-        total;
+        (Number(t.balance) /
+        totalSupply)*100
+
       let quantity =
         Number(t.balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
@@ -394,7 +388,6 @@ export default class ContractManager {
         Value: t.balance,
       };
     });
-    // console.log(data,"data")
     return { data, responseCount };
   }
 
@@ -630,7 +623,7 @@ export default class ContractManager {
         reddit: requestData.reddit ? requestData.reddit : "",
         coinGecko: requestData.coinGecko ? requestData.coinGecko : "",
         description: requestData.description ? requestData.description : "",
-        facebook:  requestData.facebook ? requestData.facebook : "",
+        facebook: requestData.facebook ? requestData.facebook : "",
       }
     );
   }
