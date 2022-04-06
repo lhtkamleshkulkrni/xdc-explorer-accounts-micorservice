@@ -37,6 +37,9 @@ TokenHolderSchem.static({
     updateManyHolder: function (findObj, updateObj) {
         return this.updateMany(findObj, updateObj);
     },
+    getHoldersCount: function(findObj){
+    return this.count(findObj)
+    },
     getHolderList: function (findObj, selectionKey = "", skip = 0, limit = 0, sort = 1) {
         return this.find(findObj, selectionKey).skip(skip).limit(limit).sort(sort);
     },

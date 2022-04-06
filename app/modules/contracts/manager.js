@@ -2,6 +2,7 @@ import ContractModel from "../../models/Contract";
 import TokenHolderModel from "../../models/TokenHolder";
 import TransferTokenModel from "../../models/Transfer";
 import AccountTrancheModel from "../../models/AccountTranche";
+import AccountModel from "../../models/Account";
 const moment = require("moment");
 
 import Utils from "../../utils";
@@ -247,6 +248,10 @@ export default class ContractManager {
     let contractResponse = await ContractModel.getContract({
       address: contractAddress,
     });
+    let balanceFromAccountTable = await AccountModel.getAccount({
+      address: contractAddress
+    })
+    let balance = balanceFromAccountTable ? balanceFromAccountTable.balance : ""
     let response = {};
     let contractStatus = "Unverified";
     if (!contractResponse) {
@@ -265,6 +270,7 @@ export default class ContractManager {
     return {
       contractResponse,
       contractStatus,
+      balance
     };
   }
 
@@ -335,7 +341,6 @@ export default class ContractManager {
     let countToHolder = await TransferTokenModel.distinct("to", {
       contract: tokenAddress,
     });
-    let responseCount = countFromHolder.length + countToHolder.length;
     let response = await TokenHolderModel.getHolderList(
       findObj,
       {},
@@ -343,6 +348,7 @@ export default class ContractManager {
       parseInt(req.body.limit),
       req.body.sortKey ? req.body.sortKey : { balance: -1 }
     );
+    let responseCount = await TokenHolderModel.getHoldersCount(findObj)
     let contractResponse = await ContractModel.getContract({
       address: tokenAddress,
     });
@@ -350,7 +356,7 @@ export default class ContractManager {
     /**
          A token which has the maximu 2o. of address for a particular contract address has the rank 1 and go on.
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
-        **/
+    **/
 
     if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
       response.sort(function (a, b) {
@@ -370,12 +376,12 @@ export default class ContractManager {
           parseFloat(10 ** parseInt(contractResponse.decimals))
         );
       });
-    }  
+    }
     let totalSupply = contractResponse.totalSupply
     const data = response.map(function (t, index) {
       let percentage =
         (Number(t.balance) /
-        totalSupply)*100
+          totalSupply) * 100
 
       let quantity =
         Number(t.balance) /
@@ -388,6 +394,8 @@ export default class ContractManager {
         Value: t.balance,
       };
     });
+
+
     return { data, responseCount };
   }
 
