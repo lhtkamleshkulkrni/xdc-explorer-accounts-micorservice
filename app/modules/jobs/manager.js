@@ -30,6 +30,7 @@ export default class BLManager {
       { balanceFrom: 50000, balanceTo: 74999 },
       { balanceFrom: 75000, balanceTo: 99999 },
       { balanceFrom: 100000, balanceTo: 249999 },
+      { balanceFrom: 250000, balanceTo: 499999 },
       { balanceFrom: 500000, balanceTo: 999999 },
       { balanceFrom: 1000000, balanceTo: 1999999 },
       { balanceFrom: 2000000, balanceTo: 2999999 },
@@ -79,8 +80,8 @@ export default class BLManager {
     }
   }
   async generateTokenAnalytics() {
-    let startTime = moment().subtract(1, "day").startOf("day").valueOf(),
-      endTime = moment().subtract(1, "day").endOf("day").valueOf();
+    let startTime = moment().subtract(1,"hour").valueOf(),
+      endTime = moment().valueOf();
 
     let query = [
       {
@@ -91,7 +92,7 @@ export default class BLManager {
           ],
         },
       },
-      { $group: { _id: "$contract", data: { $push: "$$ROOT" } } },
+      { $group: { _id: "$contract", data: { $push: {to:"$to",from:"$from",value:"$value"} } } },
     ];
     let response = await Transfer.aggregate(query);
     let analyticsData = await generateAnalyticsData(response, startTime);
@@ -302,65 +303,67 @@ async function getMarketCapData(symbol) {
 }
 
 async function getHistoryPriceData(contracts) {
-  const endTime = moment().subtract(2, "day").endOf("day").format("YYYY-MM-DD");
-  let data = [];
-  for (let index = 0; index < contracts.length; index++) {
-    const selectedContract = contracts[index];
-    if (!selectedContract || !selectedContract._id) {
-      continue;
-    }
-    // https://pro-api.coinmarketcap.com/v1/cryptocurrency/historical?symbol=ECOIN&CMC_PRO_API_KEY=cb190bb3-b61a-4d83-8559-374edbfb27b3&time_start=1641254400&time_end=1641254400
-    const URL = `${Config.COIN_MARKET_API_URL}/ohlcv/historical?symbol=${
-      selectedContract._id
-    }&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&time_start=${moment()
-      .subtract(3, "days")
-      .format("YYYY-MM-DD")}&time_end=${endTime}`;
-    let response = await HTTPService.executeHTTPRequest(
-      httpConstants.METHOD_TYPE.GET,
-      URL,
-      "",
-      {},
-      {
-        "Content-Type": httpConstants.HEADER_TYPE.APPLICATION_JSON,
+    const startTime = moment()
+    .subtract(3, "days")
+    .format("YYYY-MM-DD")
+    const endTime = moment().subtract(2, "day").endOf("day").format("YYYY-MM-DD");
+    let data = [];
+    for (let index = 0; index < 1; index++) {
+      const selectedContract = contracts[index];
+      if (!selectedContract || !selectedContract._id) {
+        continue;
       }
-    );
-    if (
-      !response ||
-      !response.status ||
-      response.status.error_message ||
-      !response.data.quotes ||
-      !response.data.quotes.length
-    ) {
-      continue;
-    }
-    const currentDateData =
-      response.data.quotes[response.data.quotes.length - 1];
-    const USDData = currentDateData.quote.USD;
-    data.push({
-      updateOne: {
-        filter: {
-          timestamp: moment(USDData.timestamp).valueOf(),
-          tokenAddress: selectedContract.address,
+      const URI = `${Config.COIN_MARKET_API_URL}/ohlcv/historical?symbol=${
+        selectedContract._id
+      }&CMC_PRO_API_KEY=${Config.CMC_API_KEY}&time_start=${startTime}&time_end=${endTime}`;
+      const URL = encodeURI(URI);
+      let response = await HTTPService.executeHTTPRequest(
+        httpConstants.METHOD_TYPE.GET,
+        URL,
+        "",
+        {},
+        {
+          "Content-Type": httpConstants.HEADER_TYPE.APPLICATION_JSON,
+        }
+      );
+      if (
+        !response ||
+        !response.status ||
+        response.status.error_message ||
+        !response.data.quotes ||
+        !response.data.quotes.length
+      ) {
+        continue;
+      }
+      const currentDateData = response.data.quotes[response.data.quotes.length - 1];
+      const USDData = currentDateData.quote.USD;
+      
+      data.push({
+        updateOne: {
+          filter: {
+            timestamp: moment(USDData.timestamp).valueOf(),
+            tokenAddress: selectedContract.address,
+          },
+          update: {
+            tokenAddress: selectedContract.address,
+            openingTime: moment(currentDateData.time_open).valueOf(),
+            closingTime: moment(currentDateData.time_close).valueOf(),
+            highValueTime: moment(currentDateData.time_high).valueOf(),
+            lowValueTime: moment(currentDateData.time_low).valueOf(),
+            openingPrice: USDData.open,
+            highestPrice: USDData.high,
+            lowestPrice: USDData.low,
+            closingPrice: USDData.close,
+            volume: USDData.volume,
+            marketCap: USDData.market_cap,
+            timestamp: moment(USDData.timestamp).valueOf(),
+          },
+          upsert: true,
         },
-        update: {
-          tokenAddress: selectedContract.address,
-          openingTime: moment(currentDateData.time_open).valueOf(),
-          closingTime: moment(currentDateData.time_close).valueOf(),
-          highValueTime: moment(currentDateData.time_high).valueOf(),
-          lowValueTime: moment(currentDateData.time_low).valueOf(),
-          openingPrice: USDData.open,
-          highestPrice: USDData.high,
-          lowestPrice: USDData.low,
-          closingPrice: USDData.close,
-          volume: USDData.volume,
-          marketCap: USDData.market_cap,
-          timestamp: moment(USDData.timestamp).valueOf(),
-        },
-        upsert: true,
-      },
-    });
+      });
+    return data;
   }
-  return data;
+ 
 }
 
 // &convert=INR
@@ -407,8 +410,8 @@ async function getTokenInfo(contracts) {
       continue;
     }
 
-    const URL = `${Config.COIN_MARKET_API_URL}/quotes/latest?symbol=${selectedContract._id}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}`;
-
+    const URI = `${Config.COIN_MARKET_API_URL}/quotes/latest?symbol=${selectedContract._id}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}`;
+    const URL = encodeURI(URI);
     let response = await HTTPService.executeHTTPRequest(
       httpConstants.METHOD_TYPE.GET,
       URL,
@@ -458,6 +461,7 @@ async function getTokenInfo(contracts) {
         upsert: true,
       },
     });
+    
   }
   return data;
 }
