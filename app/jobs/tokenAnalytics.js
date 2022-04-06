@@ -15,7 +15,7 @@ module.exports = new CronMasterJob({
     requestID: "",
   },
   cronParams: {
-    cronTime: "0 0 * * *",
+    cronTime: "0 * * * *",
     onTick: async (job, done) => {
       Utils.lhtLog(
         "cron jobs",

@@ -341,7 +341,6 @@ export default class ContractManager {
     let countToHolder = await TransferTokenModel.distinct("to", {
       contract: tokenAddress,
     });
-    let responseCount = countFromHolder.length + countToHolder.length;
     let response = await TokenHolderModel.getHolderList(
       findObj,
       {},
@@ -349,6 +348,7 @@ export default class ContractManager {
       parseInt(req.body.limit),
       req.body.sortKey ? req.body.sortKey : { balance: -1 }
     );
+    let responseCount = await TokenHolderModel.getHoldersCount(findObj)
     let contractResponse = await ContractModel.getContract({
       address: tokenAddress,
     });
@@ -394,6 +394,8 @@ export default class ContractManager {
         Value: t.balance,
       };
     });
+
+
     return { data, responseCount };
   }
 
