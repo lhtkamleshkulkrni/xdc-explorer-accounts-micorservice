@@ -9,6 +9,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../config/swagger.json";
 import { stringConstants } from "../app/common/constants";
 import JobController from "../app/modules/jobs";
+import SyncController from "../app/modules/syncHoldersAndTransfers";
 
 module.exports = (app) => {
   app.get("/", (req, res) => res.send(stringConstants.SERVICE_STATUS_HTML));
@@ -162,4 +163,12 @@ module.exports = (app) => {
     "/migrate-transfer-count",
     new ContractController().migrateTokenTransfer
   );
+
+  // APIs for updating holders and transfers for each token
+
+  app.get(
+      "/update-token-holders-and-transfers",
+      new SyncController().updateTokenHoldersAndTokenTransfersForXRC20
+  );
+
 };

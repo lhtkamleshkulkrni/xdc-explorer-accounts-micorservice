@@ -657,4 +657,5 @@ export default class ContractManager {
     }
     return true;
   };
+
 }
