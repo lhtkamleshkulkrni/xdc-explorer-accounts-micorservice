@@ -14,7 +14,9 @@ export default class SyncManager {
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
-            let totalPagesForTokens = JSON.parse(tokenDetailsResponseDummy).pages;
+            let evalTokenDetailsResponseDummy = (typeof tokenDetailsResponseDummy === 'string') ? JSON.parse(tokenDetailsResponseDummy) : tokenDetailsResponseDummy;
+
+            let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
 
             for(let y=0; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
@@ -24,33 +26,41 @@ export default class SyncManager {
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
-                if(JSON.parse(tokenDetailsResponse) && JSON.parse(tokenDetailsResponse).items && JSON.parse(tokenDetailsResponse).items.length > 0){
+                let evalTokenDetailsResponse = (typeof tokenDetailsResponse === 'string') ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+
+                if(evalTokenDetailsResponse && evalTokenDetailsResponse.items && evalTokenDetailsResponse.items.length > 0){
 
 
-                    console.log("tokenDetailsResponse =-=-=-==-", JSON.parse(tokenDetailsResponse).items.length);
+                    console.log("tokenDetailsResponse =-=-=-==-", evalTokenDetailsResponse.items.length);
 
-                    let numberOfTokens = JSON.parse(tokenDetailsResponse).items.length;
+                    let numberOfTokens = evalTokenDetailsResponse.items.length;
 
-                    let tokensArr = JSON.parse(tokenDetailsResponse).items;
+                    let tokensArr = evalTokenDetailsResponse.items;
 
                     // let tokenHolderObjArray = [];
 
                     for(let i = 0; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
 
+
                         let numberOfHolderApiCalls = (tokensArr[i].holderCount)/50;
 
                         for(let x = 1; x <= numberOfHolderApiCalls; x++){
+
+
                             let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + tokensArr[i].hash + "&page=" + x + "&limit=50"
 
                             let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
 
-                            if(JSON.parse(holderDetailsResponse) && JSON.parse(holderDetailsResponse).items && JSON.parse(holderDetailsResponse).items.length > 0){
+                            let evalHolderDetailsResponse = (typeof holderDetailsResponse === 'string') ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
+
+                            if(evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0){
 
 
-                                let holdersArr = JSON.parse(holderDetailsResponse).items;
-                                let holdersCount = JSON.parse(holderDetailsResponse).items.length;
+                                let holdersArr = evalHolderDetailsResponse.items;
+                                let holdersCount = evalHolderDetailsResponse.items.length;
 
                                 for(let j=0; j<holdersCount; j++){
+
                                     let tokenHolderObj = {
                                         "tokenContract": tokensArr[i].hash,
                                         "address": holdersArr[j].hash,
@@ -66,12 +76,13 @@ export default class SyncManager {
                                     });
 
                                     if(tokenHolderTableData){ //the holder exists for the token
-                                        console.log("Holder EXISTS", j)
+                                        console.log("Holder EXISTS", tokenHolderTableData.address, tokenHolderTableData.tokenName, i,  j)
                                     }
                                     else{ //the holder doesn't exist for the token
                                         console.log("Holder ADDING ", j)
                                         let holder = new TokenHolderModel(tokenHolderObj)
                                         await holder.saveData();
+                                        console.log("holder ", holder)
                                     }
 
                                     // tokenHolderObjArray.push(tokenHolderObj);
@@ -83,24 +94,29 @@ export default class SyncManager {
 
                                     let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
 
-                                    let parsedTransfersResponseDummy = JSON.parse(transfersResponseDummy);
+                                    let parsedTransfersResponseDummy = (typeof transfersResponseDummy === 'string') ? JSON.parse(transfersResponseDummy) : transfersResponseDummy;
 
                                     // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
 
                                     for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
+
                                         let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
 
                                         let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
 
-                                        if(JSON.parse(transfersResponse) && JSON.parse(transfersResponse).items && JSON.parse(transfersResponse).items.length > 0){
+                                        let evalTransfersResponse = (typeof transfersResponse === 'string') ? JSON.parse(transfersResponse) : transfersResponse;
 
-                                            let parsedTransfersResponse = JSON.parse(transfersResponse);
+
+                                        if(evalTransfersResponse && evalTransfersResponse.items && evalTransfersResponse.items.length > 0){
+
+                                            let parsedTransfersResponse = evalTransfersResponse;
 
                                             let transfersCount = parsedTransfersResponse.items.length;
                                             let transfersArr = parsedTransfersResponse.items;
 
                                             for(let t=0; t<transfersCount; t++){
+
                                                 let tokenTransferObj = {
                                                     "hash": transfersArr[t].transactionHash,
                                                     "blockNumber": transfersArr[t].blockNumber,
@@ -119,12 +135,13 @@ export default class SyncManager {
                                                 });
 
                                                 if(tokenTransferTableData){
-                                                    console.log("Transfer EXISTS", t)
+                                                    console.log("Transfer EXISTS", tokenTransferTableData.hash, t)
                                                 }
                                                 else{
                                                     console.log("Transfer ADDING", t)
                                                     let transfer = new TransferTokenModel(tokenTransferObj)
                                                     await transfer.saveData();
+                                                    console.log("transfer ", transfer)
                                                 }
 
 
