@@ -14,7 +14,11 @@ export default class SyncManager {
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
-            let evalTokenDetailsResponseDummy = (typeof tokenDetailsResponseDummy === 'string') ? JSON.parse(tokenDetailsResponseDummy) : tokenDetailsResponseDummy;
+            let evalTokenDetailsResponseDummy = (tokenDetailsResponseDummy && (typeof tokenDetailsResponseDummy === 'string') && (tokenDetailsResponseDummy !== "") ) ? JSON.parse(tokenDetailsResponseDummy) : tokenDetailsResponseDummy;
+
+            if(typeof evalTokenDetailsResponseDummy !== 'object'){
+                return;
+            }
 
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
@@ -26,7 +30,11 @@ export default class SyncManager {
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
-                let evalTokenDetailsResponse = (typeof tokenDetailsResponse === 'string') ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+                let evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+
+                if(typeof evalTokenDetailsResponse !== 'object'){
+                    break;
+                }
 
                 if(evalTokenDetailsResponse && evalTokenDetailsResponse.items && evalTokenDetailsResponse.items.length > 0){
 
@@ -51,7 +59,11 @@ export default class SyncManager {
 
                             let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
 
-                            let evalHolderDetailsResponse = (typeof holderDetailsResponse === 'string') ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
+                            let evalHolderDetailsResponse = (holderDetailsResponse && (typeof holderDetailsResponse === 'string') && (holderDetailsResponse !== "")) ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
+
+                            if(typeof evalHolderDetailsResponse !== 'object'){
+                                break;
+                            }
 
                             if(evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0){
 
@@ -76,13 +88,13 @@ export default class SyncManager {
                                     });
 
                                     if(tokenHolderTableData){ //the holder exists for the token
-                                        console.log("Holder EXISTS", tokenHolderTableData.address, tokenHolderTableData.tokenName, i,  j)
+                                        console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
                                     }
                                     else{ //the holder doesn't exist for the token
-                                        console.log("Holder ADDING ", j)
+                                        console.log("Holder ADDING =====", j)
                                         let holder = new TokenHolderModel(tokenHolderObj)
                                         await holder.saveData();
-                                        console.log("holder ", holder)
+                                        console.log("holder =====", holder)
                                     }
 
                                     // tokenHolderObjArray.push(tokenHolderObj);
@@ -94,7 +106,11 @@ export default class SyncManager {
 
                                     let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
 
-                                    let parsedTransfersResponseDummy = (typeof transfersResponseDummy === 'string') ? JSON.parse(transfersResponseDummy) : transfersResponseDummy;
+                                    let parsedTransfersResponseDummy = (transfersResponseDummy && (typeof transfersResponseDummy === 'string') && (transfersResponseDummy !== "") ) ? JSON.parse(transfersResponseDummy) : transfersResponseDummy;
+
+                                    if(typeof parsedTransfersResponseDummy !== 'object'){
+                                        break;
+                                    }
 
                                     // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
 
@@ -105,8 +121,11 @@ export default class SyncManager {
                                         let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
 
-                                        let evalTransfersResponse = (typeof transfersResponse === 'string') ? JSON.parse(transfersResponse) : transfersResponse;
+                                        let evalTransfersResponse = (transfersResponse && (typeof transfersResponse === 'string') && (transfersResponse !== "")) ? JSON.parse(transfersResponse) : transfersResponse;
 
+                                        if(typeof evalTransfersResponse !== 'object'){
+                                            break;
+                                        }
 
                                         if(evalTransfersResponse && evalTransfersResponse.items && evalTransfersResponse.items.length > 0){
 
@@ -135,13 +154,13 @@ export default class SyncManager {
                                                 });
 
                                                 if(tokenTransferTableData){
-                                                    console.log("Transfer EXISTS", tokenTransferTableData.hash, t)
+                                                    console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
                                                 }
                                                 else{
-                                                    console.log("Transfer ADDING", t)
+                                                    console.log("Transfer ADDING =====", t)
                                                     let transfer = new TransferTokenModel(tokenTransferObj)
                                                     await transfer.saveData();
-                                                    console.log("transfer ", transfer)
+                                                    console.log("transfer =====", transfer)
                                                 }
 
 
