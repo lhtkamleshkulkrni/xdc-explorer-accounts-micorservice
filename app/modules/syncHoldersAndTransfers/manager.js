@@ -30,7 +30,14 @@ export default class SyncManager {
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
-                let evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+                let evalTokenDetailsResponse;
+
+                try{
+                    evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+                }
+                catch(err){
+                    break;
+                }
 
                 if(typeof evalTokenDetailsResponse !== 'object'){
                     break;
@@ -50,135 +57,162 @@ export default class SyncManager {
                     for(let i = 0; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
 
 
-                        let numberOfHolderApiCalls = (tokensArr[i].holderCount)/50;
+                        if(tokensArr[i].hash !== 'xdc536dd70445cea1e97f9bf1bada04cbda5199a2a1'){ //contract address of ECOIN
 
-                        for(let x = 1; x <= numberOfHolderApiCalls; x++){
+                            let numberOfHolderApiCalls = (tokensArr[i].holderCount)/50;
 
-
-                            let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + tokensArr[i].hash + "&page=" + x + "&limit=50"
-
-                            let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
-
-                            let evalHolderDetailsResponse = (holderDetailsResponse && (typeof holderDetailsResponse === 'string') && (holderDetailsResponse !== "")) ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
-
-                            if(typeof evalHolderDetailsResponse !== 'object'){
-                                break;
-                            }
-
-                            if(evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0){
+                            for(let x = 1; x <= numberOfHolderApiCalls; x++){
 
 
-                                let holdersArr = evalHolderDetailsResponse.items;
-                                let holdersCount = evalHolderDetailsResponse.items.length;
+                                let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + tokensArr[i].hash + "&page=" + x + "&limit=50"
 
-                                for(let j=0; j<holdersCount; j++){
+                                let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
 
-                                    let tokenHolderObj = {
-                                        "tokenContract": tokensArr[i].hash,
-                                        "address": holdersArr[j].hash,
-                                        "decimals": tokensArr[i].decimals,
-                                        "symbol": tokensArr[i].symbol,
-                                        "tokenName": tokensArr[i].name,
-                                        "totalSupply": tokensArr[i].totalSupply
-                                    }
+                                let evalHolderDetailsResponse;
 
-                                    let tokenHolderTableData = await TokenHolderModel.findOne({
-                                        address: tokenHolderObj.address,
-                                        tokenContract: tokenHolderObj.tokenContract
-                                    });
+                                try{
+                                    evalHolderDetailsResponse = (holderDetailsResponse && (typeof holderDetailsResponse === 'string') && (holderDetailsResponse !== "")) ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
+                                }
+                                catch(err){
+                                    break;
+                                }
 
-                                    if(tokenHolderTableData){ //the holder exists for the token
-                                        console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
-                                    }
-                                    else{ //the holder doesn't exist for the token
-                                        console.log("Holder ADDING =====", j)
-                                        let holder = new TokenHolderModel(tokenHolderObj)
-                                        await holder.saveData();
-                                        console.log("holder =====", holder)
-                                    }
+                                if(typeof evalHolderDetailsResponse !== 'object'){
+                                    break;
+                                }
 
-                                    // tokenHolderObjArray.push(tokenHolderObj);
+                                if(evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0){
 
 
-                                    //logic for adding the transfers for the token
+                                    let holdersArr = evalHolderDetailsResponse.items;
+                                    let holdersCount = evalHolderDetailsResponse.items.length;
 
-                                    let transferUrlDummy = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=1&limit=50"
+                                    for(let j=0; j<holdersCount; j++){
 
-                                    let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
+                                        let tokenHolderObj = {
+                                            "tokenContract": tokensArr[i].hash,
+                                            "address": holdersArr[j].hash,
+                                            "decimals": tokensArr[i].decimals,
+                                            "symbol": tokensArr[i].symbol,
+                                            "tokenName": tokensArr[i].name,
+                                            "totalSupply": tokensArr[i].totalSupply
+                                        }
 
-                                    let parsedTransfersResponseDummy = (transfersResponseDummy && (typeof transfersResponseDummy === 'string') && (transfersResponseDummy !== "") ) ? JSON.parse(transfersResponseDummy) : transfersResponseDummy;
+                                        let tokenHolderTableData = await TokenHolderModel.findOne({
+                                            address: tokenHolderObj.address,
+                                            tokenContract: tokenHolderObj.tokenContract
+                                        });
 
-                                    if(typeof parsedTransfersResponseDummy !== 'object'){
-                                        break;
-                                    }
+                                        if(tokenHolderTableData){ //the holder exists for the token
+                                            console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                                        }
+                                        else{ //the holder doesn't exist for the token
+                                            console.log("Holder ADDING =====", j)
+                                            let holder = new TokenHolderModel(tokenHolderObj)
+                                            await holder.saveData();
+                                            console.log("holder =====", holder)
+                                        }
 
-                                    // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
-
-                                    for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
-
-                                        let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
-
-                                        let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
+                                        // tokenHolderObjArray.push(tokenHolderObj);
 
 
-                                        let evalTransfersResponse = (transfersResponse && (typeof transfersResponse === 'string') && (transfersResponse !== "")) ? JSON.parse(transfersResponse) : transfersResponse;
+                                        //logic for adding the transfers for the token
 
-                                        if(typeof evalTransfersResponse !== 'object'){
+                                        let transferUrlDummy = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=1&limit=50"
+
+                                        let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
+
+                                        let parsedTransfersResponseDummy;
+
+                                        try{
+                                            parsedTransfersResponseDummy = (transfersResponseDummy && (typeof transfersResponseDummy === 'string') && (transfersResponseDummy !== "") ) ? JSON.parse(transfersResponseDummy) : transfersResponseDummy;
+                                        }
+                                        catch(err){
                                             break;
                                         }
 
-                                        if(evalTransfersResponse && evalTransfersResponse.items && evalTransfersResponse.items.length > 0){
+                                        if(typeof parsedTransfersResponseDummy !== 'object'){
+                                            break;
+                                        }
 
-                                            let parsedTransfersResponse = evalTransfersResponse;
+                                        // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
 
-                                            let transfersCount = parsedTransfersResponse.items.length;
-                                            let transfersArr = parsedTransfersResponse.items;
+                                        for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
 
-                                            for(let t=0; t<transfersCount; t++){
+                                            let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
 
-                                                let tokenTransferObj = {
-                                                    "hash": transfersArr[t].transactionHash,
-                                                    "blockNumber": transfersArr[t].blockNumber,
-                                                    "method": transfersArr[t].data,
-                                                    "from": transfersArr[t].from,
-                                                    "to": transfersArr[t].to,
-                                                    "contract": transfersArr[t].address,
-                                                    "value": transfersArr[t].value,
-                                                    "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
+                                            let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
+
+                                            let evalTransfersResponse;
+
+                                            try{
+                                                evalTransfersResponse = (transfersResponse && (typeof transfersResponse === 'string') && (transfersResponse !== "")) ? JSON.parse(transfersResponse) : transfersResponse;
+                                            }
+                                            catch(err){
+                                                break;
+                                            }
+
+                                            if(typeof evalTransfersResponse !== 'object'){
+                                                break;
+                                            }
+
+                                            if(evalTransfersResponse && evalTransfersResponse.items && evalTransfersResponse.items.length > 0){
+
+                                                let parsedTransfersResponse = evalTransfersResponse;
+
+                                                let transfersCount = parsedTransfersResponse.items.length;
+                                                let transfersArr = parsedTransfersResponse.items;
+
+                                                for(let t=0; t<transfersCount; t++){
+
+                                                    let tokenTransferObj = {
+                                                        "hash": transfersArr[t].transactionHash,
+                                                        "blockNumber": transfersArr[t].blockNumber,
+                                                        "method": transfersArr[t].data,
+                                                        "from": transfersArr[t].from,
+                                                        "to": transfersArr[t].to,
+                                                        "contract": transfersArr[t].address,
+                                                        "value": transfersArr[t].value,
+                                                        "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
+
+                                                    }
+
+                                                    let tokenTransferTableData = await TransferTokenModel.findOne({
+                                                        hash: tokenTransferObj.hash,
+                                                        contract: tokenTransferObj.contract
+                                                    });
+
+                                                    if(tokenTransferTableData){
+                                                        console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
+                                                    }
+                                                    else{
+                                                        console.log("Transfer ADDING =====", t)
+                                                        let transfer = new TransferTokenModel(tokenTransferObj)
+                                                        await transfer.saveData();
+                                                        console.log("transfer =====", transfer)
+                                                    }
+
 
                                                 }
-
-                                                let tokenTransferTableData = await TransferTokenModel.findOne({
-                                                    hash: tokenTransferObj.hash,
-                                                    contract: tokenTransferObj.contract
-                                                });
-
-                                                if(tokenTransferTableData){
-                                                    console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
-                                                }
-                                                else{
-                                                    console.log("Transfer ADDING =====", t)
-                                                    let transfer = new TransferTokenModel(tokenTransferObj)
-                                                    await transfer.saveData();
-                                                    console.log("transfer =====", transfer)
-                                                }
-
 
                                             }
 
                                         }
 
+
+
+
+
+
                                     }
-
-
-
-
-
-
                                 }
+
+
                             }
 
-
+                        }
+                        else{
+                            console.log("ECOIN =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=");
                         }
                     }
 
