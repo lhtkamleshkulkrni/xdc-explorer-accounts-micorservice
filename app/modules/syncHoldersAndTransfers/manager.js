@@ -24,11 +24,10 @@ export default class SyncManager {
 
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
+            console.log("totalPagesForTokens",totalPagesForTokens);
+            for(let y=1; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
 
-            for(let y=0; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
-
-
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y+1 + "&limit=20&type=xrc20";
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y+1 + "&limit=50&type=xrc20";
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
@@ -56,7 +55,7 @@ export default class SyncManager {
 
                     // let tokenHolderObjArray = [];
 
-                    for(let i = 14; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
+                    for(let i = 0; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
 
                         //the loop starting from "WTK" token
 
@@ -111,6 +110,7 @@ export default class SyncManager {
                                         tokenContract: tokenHolderObj.tokenContract
                                     },tokenHolderObj);
 
+                                    console.log("Holder =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
                                     // if(tokenHolderTableData){ //the holder exists for the token
                                     //     console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
                                     // }
@@ -193,6 +193,7 @@ export default class SyncManager {
                                                     contract: tokenTransferObj.contract
                                                 },tokenTransferObj);
 
+                                                console.log("Transfer =====", tokenTransferTableData.hash, z, t)
                                                 // if(tokenTransferTableData){
                                                 //     console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
                                                 // }
@@ -363,7 +364,7 @@ export default class SyncManager {
                             address: tokenHolderObj.address,
                             tokenContract: tokenHolderObj.tokenContract
                         },tokenHolderObj);
-
+                        console.log("Holder **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
                         // if(tokenHolderTableData){ //the holder exists for the token
                         //     console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
                         // }
