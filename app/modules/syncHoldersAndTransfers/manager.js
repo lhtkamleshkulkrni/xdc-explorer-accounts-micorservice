@@ -12,7 +12,7 @@ export default class SyncManager {
 
         try{
 
-            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc20";
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=50&type=xrc20";
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
@@ -26,8 +26,11 @@ export default class SyncManager {
 
             console.log("totalPagesForTokens",totalPagesForTokens);
             for(let y=1; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
+                console.log("inside loop",y);
+                let num=y+1;
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
 
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y+1 + "&limit=50&type=xrc20";
+                console.log("tokenDetailsUrl ", tokenDetailsUrl);
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
@@ -37,10 +40,13 @@ export default class SyncManager {
                     evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
                 }
                 catch(err){
-                    break;
+                    console.log(err,"err");
                 }
+                console.log("evalTokenDetailsResponse ", evalTokenDetailsResponse);
+
 
                 if(typeof evalTokenDetailsResponse !== 'object'){
+                    console.log("evalTokenDetailsResponse not object");
                     break;
                 }
 
@@ -147,7 +153,8 @@ export default class SyncManager {
 
                                     for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
 
-                                        let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
+                                        let nums=z+1;
+                                        let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + nums + "&limit=50"
 
                                         let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
@@ -400,8 +407,8 @@ export default class SyncManager {
                         // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
 
                         for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
-
-                            let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
+                            let num1=z+1;
+                            let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + num1 + "&limit=50"
 
                             let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
