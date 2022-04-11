@@ -426,4 +426,5 @@ export default class ContractController {
       httpConstants.RESPONSE_CODES.OK
     );
   }
+
 }
