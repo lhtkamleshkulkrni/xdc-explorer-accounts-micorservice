@@ -111,15 +111,15 @@ export default class SyncManager {
                                         tokenContract: tokenHolderObj.tokenContract
                                     },tokenHolderObj);
 
-                                    if(tokenHolderTableData){ //the holder exists for the token
-                                        console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
-                                    }
-                                    else{ //the holder doesn't exist for the token
-                                        console.log("Holder ADDING =====", j)
-                                        let holder = new TokenHolderModel(tokenHolderObj)
-                                        await holder.saveData();
-                                        console.log("holder =====", holder)
-                                    }
+                                    // if(tokenHolderTableData){ //the holder exists for the token
+                                    //     console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                                    // }
+                                    // else{ //the holder doesn't exist for the token
+                                    //     console.log("Holder ADDING =====", j)
+                                    //     let holder = new TokenHolderModel(tokenHolderObj)
+                                    //     await holder.saveData();
+                                    //     console.log("holder =====", holder)
+                                    // }
 
                                     // tokenHolderObjArray.push(tokenHolderObj);
 
@@ -193,15 +193,15 @@ export default class SyncManager {
                                                     contract: tokenTransferObj.contract
                                                 },tokenTransferObj);
 
-                                                if(tokenTransferTableData){
-                                                    console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
-                                                }
-                                                else{
-                                                    console.log("Transfer ADDING =====", t)
-                                                    let transfer = new TransferTokenModel(tokenTransferObj)
-                                                    await transfer.saveData();
-                                                    console.log("transfer =====", transfer)
-                                                }
+                                                // if(tokenTransferTableData){
+                                                //     console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
+                                                // }
+                                                // else{
+                                                //     console.log("Transfer ADDING =====", t)
+                                                //     let transfer = new TransferTokenModel(tokenTransferObj)
+                                                //     await transfer.saveData();
+                                                //     console.log("transfer =====", transfer)
+                                                // }
 
 
                                             }
@@ -246,6 +246,7 @@ export default class SyncManager {
 
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
+            return true;
         }
         else{
             console.log("Contract ADDING =====", token.hash)
@@ -356,15 +357,15 @@ export default class SyncManager {
                             tokenContract: tokenHolderObj.tokenContract
                         },tokenHolderObj);
 
-                        if(tokenHolderTableData){ //the holder exists for the token
-                            console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
-                        }
-                        else{ //the holder doesn't exist for the token
-                            console.log("Holder ADDING **************", j)
-                            let holder = new TokenHolderModel(tokenHolderObj)
-                            await holder.saveData();
-                            console.log("holder =====", holder)
-                        }
+                        // if(tokenHolderTableData){ //the holder exists for the token
+                        //     console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                        // }
+                        // else{ //the holder doesn't exist for the token
+                        //     console.log("Holder ADDING **************", j)
+                        //     let holder = new TokenHolderModel(tokenHolderObj)
+                        //     await holder.saveData();
+                        //     console.log("holder =====", holder)
+                        // }
 
                         // tokenHolderObjArray.push(tokenHolderObj);
 
@@ -438,15 +439,16 @@ export default class SyncManager {
                                         contract: tokenTransferObj.contract
                                     },tokenTransferObj);
 
-                                    if(tokenTransferTableData){
-                                        console.log("Transfer EXISTS ************", tokenTransferTableData.hash, z, t)
-                                    }
-                                    else{
-                                        console.log("Transfer ADDING ***************", t)
-                                        let transfer = new TransferTokenModel(tokenTransferObj)
-                                        await transfer.saveData();
-                                        console.log("transfer =====", transfer)
-                                    }
+                                    console.log("tokenTransferTableData",tokenTransferTableData);
+                                    // if(tokenTransferTableData){
+                                    //     console.log("Transfer EXISTS ************", tokenTransferTableData.hash, z, t)
+                                    // }
+                                    // else{
+                                    //     console.log("Transfer ADDING ***************", t)
+                                    //     let transfer = new TransferTokenModel(tokenTransferObj)
+                                    //     await transfer.saveData();
+                                    //     console.log("transfer =====", transfer)
+                                    // }
 
 
                                 }
