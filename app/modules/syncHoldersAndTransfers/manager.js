@@ -246,6 +246,9 @@ export default class SyncManager {
 
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
+           await ContractModel.updateContract({
+                address: token.hash
+            },{ERC:2})
             return true;
         }
         else{
@@ -254,10 +257,14 @@ export default class SyncManager {
             let web3 = new Web3("wss://LeewayHertzXDCWS.BlocksScan.io");
 
             let address = "0x" + token.hash.slice(3)
-
-            let bytecode = await web3.eth.getCode(address, function(err, result){
+            let bytecode;
+            try{
+            bytecode = await web3.eth.getCode(address, function(err, result){
                 console.log("ERROR WHILE FETCHING THE BYTECODE OF THE TOKEN", err)
-            })
+            })}
+            catch(err){
+
+            }
 
             let newContract = {
                 "address": token.hash,
