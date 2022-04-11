@@ -31,7 +31,7 @@ TokenHolderSchem.static({
     },
     updateHolder: function (findObj, updateObj) {
         return this.findOneAndUpdate(findObj, updateObj, {
-            returnNewDocument: true,
+            upsert: true,
         });
     },
     updateManyHolder: function (findObj, updateObj) {

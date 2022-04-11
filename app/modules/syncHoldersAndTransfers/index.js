@@ -44,7 +44,7 @@ export default class SyncController {
             httpConstants.LOG_LEVEL_TYPE.INFO
         );
         let [error, migrateTokenTransferResponse] = await Utils.parseResponse(
-            new SyncManager().updateTokenHoldersAndTokenTransfersForGivenToken(request.params)
+            new SyncManager().updateTokenHoldersAndTokenTransfersForGivenToken(request.query)
         );
         if (error) {
             Utils.lhtLog(

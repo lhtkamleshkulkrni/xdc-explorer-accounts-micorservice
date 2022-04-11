@@ -93,18 +93,22 @@ export default class SyncManager {
                                 for(let j=0; j<holdersCount; j++){
 
                                     let tokenHolderObj = {
-                                        "tokenContract": tokensArr[i].hash,
+                                        "tokenContract": request.hash,
                                         "address": holdersArr[j].hash,
-                                        "decimals": tokensArr[i].decimals,
-                                        "symbol": tokensArr[i].symbol,
-                                        "tokenName": tokensArr[i].name,
-                                        "totalSupply": tokensArr[i].totalSupply
+                                        "decimals": evalTokenDetailsRes.decimals,
+                                        "symbol": evalTokenDetailsRes.symbol,
+                                        "tokenName": evalTokenDetailsRes.name,
+                                        "totalSupply": evalTokenDetailsRes.totalSupply,
+                                        "balance":holdersArr[j].quantity,
+                                        "modifiedOn":Date.now(),
+                                        "createdOn":Date.now(),
+                                        "isDeleted":false,
+                                        "isActive":true
                                     }
-
-                                    let tokenHolderTableData = await TokenHolderModel.findOne({
+                                    let tokenHolderTableData = await TokenHolderModel.updateHolder({
                                         address: tokenHolderObj.address,
                                         tokenContract: tokenHolderObj.tokenContract
-                                    });
+                                    },tokenHolderObj);
 
                                     if(tokenHolderTableData){ //the holder exists for the token
                                         console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
@@ -177,13 +181,16 @@ export default class SyncManager {
                                                     "contract": transfersArr[t].address,
                                                     "value": transfersArr[t].value,
                                                     "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
-
+                                                    "modifiedOn": Date.now(),
+                                                    "createdOn":  Date.now(),
+                                                    "isDeleted":  false ,
+                                                    "isActive":  true
                                                 }
 
-                                                let tokenTransferTableData = await TransferTokenModel.findOne({
+                                                let tokenTransferTableData = await TransferTokenModel.updateToken({
                                                     hash: tokenTransferObj.hash,
                                                     contract: tokenTransferObj.contract
-                                                });
+                                                },tokenTransferObj);
 
                                                 if(tokenTransferTableData){
                                                     console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
@@ -280,7 +287,9 @@ export default class SyncManager {
 
         try{
 
-            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash
+            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash;
+            let startPage=request.startPage;
+            let endPage=request.endPage;
 
             let tokenDetailsRes = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
             let evalTokenDetailsRes;
@@ -300,7 +309,7 @@ export default class SyncManager {
 
             let numberOfHolderApiCalls = (evalTokenDetailsRes.holderCount)/50;
 
-            for(let x = 1; x <= numberOfHolderApiCalls; x++){
+            for(let x = startPage; x <= endPage; x++){
 
 
                 let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + evalTokenDetailsRes.hash + "&page=" + x + "&limit=50"
@@ -329,18 +338,22 @@ export default class SyncManager {
                     for(let j=0; j<holdersCount; j++){
 
                         let tokenHolderObj = {
-                            "tokenContract": evalTokenDetailsRes.hash,
+                            "tokenContract": request.hash,
                             "address": holdersArr[j].hash,
                             "decimals": evalTokenDetailsRes.decimals,
                             "symbol": evalTokenDetailsRes.symbol,
                             "tokenName": evalTokenDetailsRes.name,
-                            "totalSupply": evalTokenDetailsRes.totalSupply
+                            "totalSupply": evalTokenDetailsRes.totalSupply,
+                            "balance":holdersArr[j].quantity,
+                            "modifiedOn":Date.now(),
+                            "createdOn":Date.now(),
+                            "isDeleted":false,
+                            "isAcive":true
                         }
-
-                        let tokenHolderTableData = await TokenHolderModel.findOne({
+                        let tokenHolderTableData = await TokenHolderModel.updateHolder({
                             address: tokenHolderObj.address,
                             tokenContract: tokenHolderObj.tokenContract
-                        });
+                        },tokenHolderObj);
 
                         if(tokenHolderTableData){ //the holder exists for the token
                             console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
@@ -413,13 +426,16 @@ export default class SyncManager {
                                         "contract": transfersArr[t].address,
                                         "value": transfersArr[t].value,
                                         "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
-
+                                        "modifiedOn": Date.now(),
+                                        "createdOn":  Date.now(),
+                                        "isDeleted":  false ,
+                                        "isActive":  true
                                     }
 
-                                    let tokenTransferTableData = await TransferTokenModel.findOne({
+                                    let tokenTransferTableData = await TransferTokenModel.updateToken({
                                         hash: tokenTransferObj.hash,
                                         contract: tokenTransferObj.contract
-                                    });
+                                    },tokenTransferObj);
 
                                     if(tokenTransferTableData){
                                         console.log("Transfer EXISTS ************", tokenTransferTableData.hash, z, t)
