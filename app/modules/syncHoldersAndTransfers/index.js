@@ -32,4 +32,36 @@ export default class SyncController {
             httpConstants.RESPONSE_CODES.OK
         );
     }
+
+
+
+    async updateTokenHoldersAndTokenTransfersForGivenToken(request, response) {
+        Utils.lhtLog(
+            "SyncController:updateTokenHoldersAndTokenTransfersForGivenToken",
+            "",
+            "",
+            "",
+            httpConstants.LOG_LEVEL_TYPE.INFO
+        );
+        let [error, migrateTokenTransferResponse] = await Utils.parseResponse(
+            new SyncManager().updateTokenHoldersAndTokenTransfersForGivenToken(request.params)
+        );
+        if (error) {
+            Utils.lhtLog(
+                "SyncController:updateTokenHoldersAndTokenTransfersForGivenToken",
+                "updateTokenHoldersAndTokenTransfersForGivenToken err",
+                error,
+                "",
+                "ERROR"
+            );
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(
+            response,
+            migrateTokenTransferResponse,
+            apiSuccessMessage.HOLDERS_UPDATED_SUCCESSFULLY,
+            httpConstants.RESPONSE_STATUS.SUCCESS,
+            httpConstants.RESPONSE_CODES.OK
+        );
+    }
 }
