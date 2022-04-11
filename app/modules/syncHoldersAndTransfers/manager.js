@@ -93,18 +93,19 @@ export default class SyncManager {
                                 for(let j=0; j<holdersCount; j++){
 
                                     let tokenHolderObj = {
-                                        "tokenContract": request.hash,
+                                        "tokenContract": tokensArr[i].hash,
                                         "address": holdersArr[j].hash,
-                                        "decimals": evalTokenDetailsRes.decimals,
-                                        "symbol": evalTokenDetailsRes.symbol,
-                                        "tokenName": evalTokenDetailsRes.name,
-                                        "totalSupply": evalTokenDetailsRes.totalSupply,
+                                        "decimals": tokensArr[i].decimals,
+                                        "symbol": tokensArr[i].symbol,
+                                        "tokenName": tokensArr[i].name,
+                                        "totalSupply": tokensArr[i].totalSupply,
                                         "balance":holdersArr[j].quantity,
                                         "modifiedOn":Date.now(),
                                         "createdOn":Date.now(),
                                         "isDeleted":false,
                                         "isActive":true
                                     }
+
                                     let tokenHolderTableData = await TokenHolderModel.updateHolder({
                                         address: tokenHolderObj.address,
                                         tokenContract: tokenHolderObj.tokenContract
