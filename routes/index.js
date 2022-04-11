@@ -171,4 +171,9 @@ module.exports = (app) => {
       new SyncController().updateTokenHoldersAndTokenTransfersForXRC20
   );
 
+  app.get(
+      "/update-token-holders-and-transfers-for-one-token/:hash",
+      new SyncController().updateTokenHoldersAndTokenTransfersForGivenToken
+  );
+
 };
