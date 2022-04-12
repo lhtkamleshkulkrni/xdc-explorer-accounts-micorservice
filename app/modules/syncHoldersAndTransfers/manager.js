@@ -98,13 +98,13 @@ export default class SyncManager {
                                 for(let j=0; j<holdersCount; j++){
 
                                     let tokenHolderObj = {
-                                        "tokenContract": tokensArr[i].hash,
-                                        "address": holdersArr[j].hash,
-                                        "decimals": tokensArr[i].decimals,
-                                        "symbol": tokensArr[i].symbol,
-                                        "tokenName": tokensArr[i].name,
-                                        "totalSupply": tokensArr[i].totalSupply,
-                                        "balance":holdersArr[j].quantity,
+                                        "tokenContract": tokensArr[i].hash ? tokensArr[i].hash : "",
+                                        "address": holdersArr[j].hash ? holdersArr[j].hash : "",
+                                        "decimals": tokensArr[i].decimals ? tokensArr[i].decimals : 0,
+                                        "symbol": tokensArr[i].symbol ? tokensArr[i].symbol : "",
+                                        "tokenName": tokensArr[i].name ? tokensArr[i].name : "",
+                                        "totalSupply": tokensArr[i].totalSupply ? tokensArr[i].totalSupply : 0,
+                                        "balance": holdersArr[j].quantity ? holdersArr[j].quantity + 0 : 0,
                                         "modifiedOn":Date.now(),
                                         "createdOn":Date.now(),
                                         "isDeleted":false,
@@ -181,14 +181,14 @@ export default class SyncManager {
                                             for(let t=0; t<transfersCount; t++){
 
                                                 let tokenTransferObj = {
-                                                    "hash": transfersArr[t].transactionHash,
-                                                    "blockNumber": transfersArr[t].blockNumber,
-                                                    "method": transfersArr[t].data,
-                                                    "from": transfersArr[t].from,
-                                                    "to": transfersArr[t].to,
-                                                    "contract": transfersArr[t].address,
-                                                    "value": transfersArr[t].value,
-                                                    "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
+                                                    "hash": transfersArr[t].transactionHash ? transfersArr[t].transactionHash : "",
+                                                    "blockNumber": transfersArr[t].blockNumber ? transfersArr[t].blockNumber : "",
+                                                    "method": transfersArr[t].data ? transfersArr[t].data : "",
+                                                    "from": transfersArr[t].from ? transfersArr[t].from : "",
+                                                    "to": transfersArr[t].to ? transfersArr[t].to : "",
+                                                    "contract": transfersArr[t].address ? transfersArr[t].address : "",
+                                                    "value": transfersArr[t].value ? transfersArr[t].value : "",
+                                                    "timestamp": transfersArr[t].timestamp ? Date.parse(transfersArr[t].timestamp)/1000 : 0, //conversion to epoch in seconds
                                                     "modifiedOn": Date.now(),
                                                     "createdOn":  Date.now(),
                                                     "isDeleted":  false ,
@@ -275,16 +275,16 @@ export default class SyncManager {
             }
 
             let newContract = {
-                "address": token.hash,
-                "holdersCount": token.holderCount,
+                "address": token.hash ? token.hash : "",
+                "holdersCount": token.holderCount ? token.holderCount : 0,
                 "ERC": 2,
-                "contractName": token.name,
-                "tokenName": token.name,
-                "symbol": token.symbol,
-                "decimals": token.decimals,
-                "totalSupply": token.totalSupply,
-                "byteCode": bytecode,
-                "createdOn": Date.parse(token.createdAt)/1000
+                "contractName": token.name ? token.name : "",
+                "tokenName": token.name ? token.name : "",
+                "symbol": token.symbol ? token.symbol : "",
+                "decimals": token.decimals ? token.decimals : 0,
+                "totalSupply": token.totalSupply ? token.totalSupply : 0,
+                "byteCode": bytecode ? bytecode : "",
+                "createdOn": token.createdAt ? Date.parse(token.createdAt)/1000 : 0
             }
 
             let contract = new ContractModel(newContract)
@@ -324,11 +324,13 @@ export default class SyncManager {
 
             await this.checkToken(evalTokenDetailsRes);
 
+            console.log("sgdsgcxbnsvanbvb yehgvbvnb")
+
             let numberOfHolderApiCalls = (evalTokenDetailsRes.holderCount)/50;
 
             for(let x = startPage; x <= endPage; x++){
 
-
+                console.log("x =-============", x);
                 let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + evalTokenDetailsRes.hash + "&page=" + x + "&limit=50"
 
                 let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
@@ -355,13 +357,13 @@ export default class SyncManager {
                     for(let j=0; j<holdersCount; j++){
 
                         let tokenHolderObj = {
-                            "tokenContract": request.hash,
-                            "address": holdersArr[j].hash,
-                            "decimals": evalTokenDetailsRes.decimals,
-                            "symbol": evalTokenDetailsRes.symbol,
-                            "tokenName": evalTokenDetailsRes.name,
-                            "totalSupply": evalTokenDetailsRes.totalSupply,
-                            "balance":holdersArr[j].quantity,
+                            "tokenContract": request.hash ? request.hash : "",
+                            "address": holdersArr[j].hash ? holdersArr[j].hash : "",
+                            "decimals": evalTokenDetailsRes.decimals ? evalTokenDetailsRes.decimals : 0,
+                            "symbol": evalTokenDetailsRes.symbol ? evalTokenDetailsRes.symbol : "",
+                            "tokenName": evalTokenDetailsRes.name ? evalTokenDetailsRes.name : "",
+                            "totalSupply": evalTokenDetailsRes.totalSupply ? evalTokenDetailsRes.totalSupply : 0,
+                            "balance":holdersArr[j].quantity ? holdersArr[j].quantity + 0 : 0,
                             "modifiedOn":Date.now(),
                             "createdOn":Date.now(),
                             "isDeleted":false,
@@ -435,14 +437,14 @@ export default class SyncManager {
                                 for(let t=0; t<transfersCount; t++){
 
                                     let tokenTransferObj = {
-                                        "hash": transfersArr[t].transactionHash,
-                                        "blockNumber": transfersArr[t].blockNumber,
-                                        "method": transfersArr[t].data,
-                                        "from": transfersArr[t].from,
-                                        "to": transfersArr[t].to,
-                                        "contract": transfersArr[t].address,
-                                        "value": transfersArr[t].value,
-                                        "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
+                                        "hash": transfersArr[t].transactionHash ? transfersArr[t].transactionHash : "",
+                                        "blockNumber": transfersArr[t].blockNumber ? transfersArr[t].blockNumber : "",
+                                        "method": transfersArr[t].data ? transfersArr[t].data : "",
+                                        "from": transfersArr[t].from ? transfersArr[t].from : "",
+                                        "to": transfersArr[t].to ? transfersArr[t].to : "",
+                                        "contract": transfersArr[t].address ? transfersArr[t].address : "",
+                                        "value": transfersArr[t].value ? transfersArr[t].value : "",
+                                        "timestamp": transfersArr[t].timestamp ? Date.parse(transfersArr[t].timestamp)/1000 : 0, //conversion to epoch in seconds
                                         "modifiedOn": Date.now(),
                                         "createdOn":  Date.now(),
                                         "isDeleted":  false ,
