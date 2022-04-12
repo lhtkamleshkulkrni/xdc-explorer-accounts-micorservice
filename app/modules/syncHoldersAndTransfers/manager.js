@@ -578,11 +578,11 @@ export default class SyncManager {
                         });
 
                         if (tokenHolderTableData) { //the holder exists for the token
-                            // let tokenHolderTableDataUpdated = await TokenHolderModel.updateHolder({
-                            //     address: tokenHolderObj.address,
-                            //     tokenContract: tokenHolderObj.tokenContract
-                            // }, tokenHolderObj);
-                            console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x, j)
+                            let tokenHolderTableDataUpdated = await TokenHolderModel.updateHolder({
+                                address: tokenHolderObj.address,
+                                tokenContract: tokenHolderObj.tokenContract
+                            }, tokenHolderObj);
+                            console.log("Holder EXISTS **********", tokenHolderTableDataUpdated.address, tokenHolderTableDataUpdated.tokenName, x, j)
                         } else { //the holder doesn't exist for the token
                             console.log("Holder ADDING **************", j)
                             let holder = new TokenHolderModel(tokenHolderObj)
@@ -677,11 +677,11 @@ export default class SyncManager {
                         });
 
                         if(tokenTransferTableData){
-                            // let tokenTransferTableDataUpdated = await TransferTokenModel.updateToken({
-                            //     hash: tokenTransferObj.hash,
-                            //     contract: tokenTransferObj.contract
-                            // },tokenTransferObj);
-                            console.log("Transfer EXISTS ************", tokenTransferTableData.hash, x, t)
+                            let tokenTransferTableDataUpdated = await TransferTokenModel.updateToken({
+                                hash: tokenTransferObj.hash,
+                                contract: tokenTransferObj.contract
+                            },tokenTransferObj);
+                            console.log("Transfer EXISTS ************", tokenTransferTableDataUpdated.hash, x, t)
                         }
                         else{
                             console.log("Transfer ADDING ***************", t)
