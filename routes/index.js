@@ -176,4 +176,16 @@ module.exports = (app) => {
       new SyncController().updateTokenHoldersAndTokenTransfersForGivenToken
   );
 
+  //new Scripts
+
+  app.get(
+      "/update-token-holders-for-one-token/",
+      new SyncController().updateTokenHoldersForOneToken
+  );
+
+  app.get(
+      "/update-token-transfers-for-one-token/",
+      new SyncController().updateTokenTransfersForOneToken
+  );
+
 };

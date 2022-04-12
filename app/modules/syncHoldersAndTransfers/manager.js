@@ -30,7 +30,7 @@ export default class SyncManager {
                 let num=y+1;
                 let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
 
-                console.log("tokenDetailsUrl ", tokenDetailsUrl);
+                // console.log("tokenDetailsUrl ", tokenDetailsUrl);
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
@@ -253,13 +253,16 @@ export default class SyncManager {
     checkToken = async (token) => {
 
         let contractData = await ContractModel.findOne({
-            address: token.hash
+            address: token.hash,
+            ERC: 2
         });
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
-           await ContractModel.updateContract({
-                address: token.hash
-            },{ERC:2})
+           // await ContractModel.updateContract({
+           //      address: token.hash
+           //  },{ERC:2})
+            tokenProcessed++;
+            console.log("tokenProcessed ==========================", tokenProcessed);
             return true;
         }
         else{
@@ -294,8 +297,10 @@ export default class SyncManager {
            let res= await contract.saveData();
             console.log("contract saved=====",res);
             console.log("contract =====", contract)
+
+            tokenProcessed++;
+            console.log("tokenProcessed ==========================", tokenProcessed);
         }
-        tokenProcessed++;
 
     }
 
@@ -495,4 +500,208 @@ export default class SyncManager {
             console.log("ERROR IN SCRIPT FOR 1 TOKEN **************", err);
         }
     };
+
+
+
+
+
+
+    //new APIs
+
+    updateTokenHoldersForOneToken = async (request) => {
+        try {
+
+            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash;
+            let startPage = request.startPage;
+            let endPage = request.endPage;
+
+            let tokenDetailsRes = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
+            let evalTokenDetailsRes;
+
+            try {
+                evalTokenDetailsRes = (tokenDetailsRes && (typeof tokenDetailsRes === 'string') && (tokenDetailsRes !== "")) ? JSON.parse(tokenDetailsRes) : tokenDetailsRes;
+            } catch (err) {
+                throw err;
+            }
+
+            if (typeof evalTokenDetailsRes !== 'object') {
+                throw 'Invalid response from token details API'
+            }
+
+
+            for (let x = startPage; x <= endPage; x++) {
+
+                console.log("x =-============", x);
+
+                let holderDataUrl = "https://explorer.xinfin.network/api/token-holders?page=" + x + "&limit=50&address=" + evalTokenDetailsRes.hash
+
+                let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '')
+
+                let evalHolderDetailsResponse;
+
+                try {
+                    evalHolderDetailsResponse = (holderDetailsResponse && (typeof holderDetailsResponse === 'string') && (holderDetailsResponse !== "")) ? JSON.parse(holderDetailsResponse) : holderDetailsResponse;
+                } catch (err) {
+                    continue;
+                }
+
+                if (typeof evalHolderDetailsResponse !== 'object') {
+                    continue;
+                }
+
+                console.log("Holder's API response =============================================>", evalHolderDetailsResponse)
+
+                if (evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0) {
+
+                    let holdersArr = evalHolderDetailsResponse.items;
+                    let holdersCount = evalHolderDetailsResponse.items.length;
+
+                    for (let j = 0; j < holdersCount; j++) {
+
+                        let tokenHolderObj = {
+                            "tokenContract": request.hash ? request.hash : "",
+                            "address": holdersArr[j].hash ? holdersArr[j].hash : "",
+                            "decimals": evalTokenDetailsRes.decimals ? evalTokenDetailsRes.decimals : 0,
+                            "symbol": evalTokenDetailsRes.symbol ? evalTokenDetailsRes.symbol : "",
+                            "tokenName": evalTokenDetailsRes.name ? evalTokenDetailsRes.name : "",
+                            "totalSupply": evalTokenDetailsRes.totalSupply ? evalTokenDetailsRes.totalSupply : 0,
+                            "balance": holdersArr[j].quantity ? holdersArr[j].quantity + 0 : 0,
+                            "modifiedOn": Date.now(),
+                            "createdOn": Date.now(),
+                            "isDeleted": false,
+                            "isAcive": true
+                        }
+
+                        let tokenHolderTableData = await TokenHolderModel.findOne({
+                            address: tokenHolderObj.address,
+                            tokenContract: tokenHolderObj.tokenContract
+                        });
+
+                        if (tokenHolderTableData) { //the holder exists for the token
+                            // let tokenHolderTableDataUpdated = await TokenHolderModel.updateHolder({
+                            //     address: tokenHolderObj.address,
+                            //     tokenContract: tokenHolderObj.tokenContract
+                            // }, tokenHolderObj);
+                            console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x, j)
+                        } else { //the holder doesn't exist for the token
+                            console.log("Holder ADDING **************", j)
+                            let holder = new TokenHolderModel(tokenHolderObj)
+                            await holder.saveData();
+                            console.log("holder =====", holder)
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+        catch(err){
+            console.log("PARENT TRY/CATCH BLOCK ERROR =======>", err);
+        }
+    }
+
+
+
+
+    updateTokenTransfersForOneToken = async (request) => {
+        try{
+
+            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash;
+            let startPage = request.startPage;
+            let endPage = request.endPage;
+
+            let tokenDetailsRes = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
+            let evalTokenDetailsRes;
+
+            try {
+                evalTokenDetailsRes = (tokenDetailsRes && (typeof tokenDetailsRes === 'string') && (tokenDetailsRes !== "")) ? JSON.parse(tokenDetailsRes) : tokenDetailsRes;
+            } catch (err) {
+                throw err;
+            }
+
+            if (typeof evalTokenDetailsRes !== 'object') {
+                throw 'Invalid response from token details API'
+            }
+
+            for (let x = startPage; x <= endPage; x++) {
+
+                console.log("x =-============", x);
+
+                let transferUrl = "https://explorer.xinfin.network/api/token-txs/xrc20?page=" + x + "&limit=50&token=" + evalTokenDetailsRes.hash
+
+                let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
+
+                let evalTransfersResponse;
+
+                try{
+                    evalTransfersResponse = (transfersResponse && (typeof transfersResponse === 'string') && (transfersResponse !== "")) ? JSON.parse(transfersResponse) : transfersResponse;
+                }
+                catch(err){
+                    continue;
+                }
+
+                if(typeof evalTransfersResponse !== 'object'){
+                    continue;
+                }
+
+                console.log("TRANSFERS API RESPONSE ================================================>", evalTransfersResponse)
+
+                if(evalTransfersResponse && evalTransfersResponse.items && evalTransfersResponse.items.length > 0){
+
+                    let parsedTransfersResponse = evalTransfersResponse;
+
+                    let transfersCount = parsedTransfersResponse.items.length;
+                    let transfersArr = parsedTransfersResponse.items;
+
+                    for(let t=0; t<transfersCount; t++){
+
+                        let tokenTransferObj = {
+                            "hash": transfersArr[t].transactionHash ? transfersArr[t].transactionHash : "",
+                            "blockNumber": transfersArr[t].blockNumber ? transfersArr[t].blockNumber : "",
+                            "method": transfersArr[t].data ? transfersArr[t].data : "",
+                            "from": transfersArr[t].from ? transfersArr[t].from : "",
+                            "to": transfersArr[t].to ? transfersArr[t].to : "",
+                            "contract": transfersArr[t].address ? transfersArr[t].address : "",
+                            "value": transfersArr[t].value ? transfersArr[t].value : "",
+                            "timestamp": transfersArr[t].timestamp ? Date.parse(transfersArr[t].timestamp)/1000 : 0, //conversion to epoch in seconds
+                            "modifiedOn": Date.now(),
+                            "createdOn":  Date.now(),
+                            "isDeleted":  false ,
+                            "isActive":  true
+                        }
+
+                        let tokenTransferTableData = await TransferTokenModel.findOne({
+                            hash: tokenTransferObj.hash,
+                            contract: tokenTransferObj.contract
+                        });
+
+                        if(tokenTransferTableData){
+                            // let tokenTransferTableDataUpdated = await TransferTokenModel.updateToken({
+                            //     hash: tokenTransferObj.hash,
+                            //     contract: tokenTransferObj.contract
+                            // },tokenTransferObj);
+                            console.log("Transfer EXISTS ************", tokenTransferTableData.hash, x, t)
+                        }
+                        else{
+                            console.log("Transfer ADDING ***************", t)
+                            let transfer = new TransferTokenModel(tokenTransferObj)
+                            await transfer.saveData();
+                            console.log("transfer =====", transfer)
+                        }
+
+
+                    }
+
+                }
+
+            }
+
+        }
+        catch(err){
+
+        }
+    }
+
+
 }
