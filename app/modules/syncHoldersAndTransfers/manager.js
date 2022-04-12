@@ -25,7 +25,7 @@ export default class SyncManager {
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
             console.log("totalPagesForTokens",totalPagesForTokens);
-            for(let y=1; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
+            for(let y=0; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
                 console.log("inside loop",y);
                 let num=y+1;
                 let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
@@ -40,20 +40,20 @@ export default class SyncManager {
                     evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
                 }
                 catch(err){
-                    console.log(err,"err");
+                    console.log(err,"catch err BREAK");
                 }
                 console.log("evalTokenDetailsResponse ", evalTokenDetailsResponse);
 
 
                 if(typeof evalTokenDetailsResponse !== 'object'){
-                    console.log("evalTokenDetailsResponse not object");
+                    console.log("evalTokenDetailsResponse not object BREAK");
                     break;
                 }
 
                 if(evalTokenDetailsResponse && evalTokenDetailsResponse.items && evalTokenDetailsResponse.items.length > 0){
 
 
-                    console.log("tokenDetailsResponse =-=-=-==-", evalTokenDetailsResponse.items.length);
+                    console.log("tokenDetailsResponse ", evalTokenDetailsResponse.items.length);
 
                     let numberOfTokens = evalTokenDetailsResponse.items.length;
 
@@ -66,7 +66,9 @@ export default class SyncManager {
                         //the loop starting from "WTK" token
 
                         await this.checkToken(tokensArr[i]);
-
+                        console.log("token checked",tokensArr[i].hash)
+                        continue;
+                        console.log("token checked after continue",tokensArr[i].hash)
                         let numberOfHolderApiCalls = (tokensArr[i].holderCount)/50;
 
                         for(let x = 1; x <= numberOfHolderApiCalls; x++){
