@@ -12,7 +12,7 @@ export default class SyncManager {
 
         try{
 
-            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc20";
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=50&type=xrc20";
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
@@ -24,11 +24,13 @@ export default class SyncManager {
 
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
+            console.log("totalPagesForTokens",totalPagesForTokens);
+            for(let y=1; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
+                console.log("inside loop",y);
+                let num=y+1;
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
 
-            for(let y=0; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
-
-
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y+1 + "&limit=20&type=xrc20";
+                console.log("tokenDetailsUrl ", tokenDetailsUrl);
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
@@ -38,10 +40,13 @@ export default class SyncManager {
                     evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
                 }
                 catch(err){
-                    break;
+                    console.log(err,"err");
                 }
+                console.log("evalTokenDetailsResponse ", evalTokenDetailsResponse);
+
 
                 if(typeof evalTokenDetailsResponse !== 'object'){
+                    console.log("evalTokenDetailsResponse not object");
                     break;
                 }
 
@@ -56,7 +61,7 @@ export default class SyncManager {
 
                     // let tokenHolderObjArray = [];
 
-                    for(let i = 14; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
+                    for(let i = 0; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
 
                         //the loop starting from "WTK" token
 
@@ -98,23 +103,29 @@ export default class SyncManager {
                                         "decimals": tokensArr[i].decimals,
                                         "symbol": tokensArr[i].symbol,
                                         "tokenName": tokensArr[i].name,
-                                        "totalSupply": tokensArr[i].totalSupply
+                                        "totalSupply": tokensArr[i].totalSupply,
+                                        "balance":holdersArr[j].quantity,
+                                        "modifiedOn":Date.now(),
+                                        "createdOn":Date.now(),
+                                        "isDeleted":false,
+                                        "isActive":true
                                     }
 
-                                    let tokenHolderTableData = await TokenHolderModel.findOne({
+                                    let tokenHolderTableData = await TokenHolderModel.updateHolder({
                                         address: tokenHolderObj.address,
                                         tokenContract: tokenHolderObj.tokenContract
-                                    });
+                                    },tokenHolderObj);
 
-                                    if(tokenHolderTableData){ //the holder exists for the token
-                                        console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
-                                    }
-                                    else{ //the holder doesn't exist for the token
-                                        console.log("Holder ADDING =====", j)
-                                        let holder = new TokenHolderModel(tokenHolderObj)
-                                        await holder.saveData();
-                                        console.log("holder =====", holder)
-                                    }
+                                    console.log("Holder =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                                    // if(tokenHolderTableData){ //the holder exists for the token
+                                    //     console.log("Holder EXISTS =====", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                                    // }
+                                    // else{ //the holder doesn't exist for the token
+                                    //     console.log("Holder ADDING =====", j)
+                                    //     let holder = new TokenHolderModel(tokenHolderObj)
+                                    //     await holder.saveData();
+                                    //     console.log("holder =====", holder)
+                                    // }
 
                                     // tokenHolderObjArray.push(tokenHolderObj);
 
@@ -142,7 +153,8 @@ export default class SyncManager {
 
                                     for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
 
-                                        let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
+                                        let nums=z+1;
+                                        let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + nums + "&limit=50"
 
                                         let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
@@ -177,23 +189,27 @@ export default class SyncManager {
                                                     "contract": transfersArr[t].address,
                                                     "value": transfersArr[t].value,
                                                     "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
-
+                                                    "modifiedOn": Date.now(),
+                                                    "createdOn":  Date.now(),
+                                                    "isDeleted":  false ,
+                                                    "isActive":  true
                                                 }
 
-                                                let tokenTransferTableData = await TransferTokenModel.findOne({
+                                                let tokenTransferTableData = await TransferTokenModel.updateToken({
                                                     hash: tokenTransferObj.hash,
                                                     contract: tokenTransferObj.contract
-                                                });
+                                                },tokenTransferObj);
 
-                                                if(tokenTransferTableData){
-                                                    console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
-                                                }
-                                                else{
-                                                    console.log("Transfer ADDING =====", t)
-                                                    let transfer = new TransferTokenModel(tokenTransferObj)
-                                                    await transfer.saveData();
-                                                    console.log("transfer =====", transfer)
-                                                }
+                                                console.log("Transfer =====", tokenTransferTableData.hash, z, t)
+                                                // if(tokenTransferTableData){
+                                                //     console.log("Transfer EXISTS =====", tokenTransferTableData.hash, z, t)
+                                                // }
+                                                // else{
+                                                //     console.log("Transfer ADDING =====", t)
+                                                //     let transfer = new TransferTokenModel(tokenTransferObj)
+                                                //     await transfer.saveData();
+                                                //     console.log("transfer =====", transfer)
+                                                // }
 
 
                                             }
@@ -238,6 +254,10 @@ export default class SyncManager {
 
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
+           await ContractModel.updateContract({
+                address: token.hash
+            },{ERC:2})
+            return true;
         }
         else{
             console.log("Contract ADDING =====", token.hash)
@@ -245,10 +265,14 @@ export default class SyncManager {
             let web3 = new Web3("wss://LeewayHertzXDCWS.BlocksScan.io");
 
             let address = "0x" + token.hash.slice(3)
-
-            let bytecode = await web3.eth.getCode(address, function(err, result){
+            let bytecode;
+            try{
+            bytecode = await web3.eth.getCode(address, function(err, result){
                 console.log("ERROR WHILE FETCHING THE BYTECODE OF THE TOKEN", err)
-            })
+            })}
+            catch(err){
+
+            }
 
             let newContract = {
                 "address": token.hash,
@@ -280,7 +304,9 @@ export default class SyncManager {
 
         try{
 
-            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash
+            let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens/" + request.hash;
+            let startPage=request.startPage;
+            let endPage=request.endPage;
 
             let tokenDetailsRes = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
             let evalTokenDetailsRes;
@@ -302,9 +328,7 @@ export default class SyncManager {
 
             let numberOfHolderApiCalls = (evalTokenDetailsRes.holderCount)/50;
 
-            console.log("numberOfHolderApiCalls **************", numberOfHolderApiCalls);
-
-            for(let x = 1; x <= numberOfHolderApiCalls; x++){
+            for(let x = startPage; x <= endPage; x++){
 
                 console.log("x =-============", x);
                 let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + evalTokenDetailsRes.hash + "&page=" + x + "&limit=50"
@@ -333,28 +357,32 @@ export default class SyncManager {
                     for(let j=0; j<holdersCount; j++){
 
                         let tokenHolderObj = {
-                            "tokenContract": evalTokenDetailsRes.hash,
+                            "tokenContract": request.hash,
                             "address": holdersArr[j].hash,
                             "decimals": evalTokenDetailsRes.decimals,
                             "symbol": evalTokenDetailsRes.symbol,
                             "tokenName": evalTokenDetailsRes.name,
-                            "totalSupply": evalTokenDetailsRes.totalSupply
+                            "totalSupply": evalTokenDetailsRes.totalSupply,
+                            "balance":holdersArr[j].quantity,
+                            "modifiedOn":Date.now(),
+                            "createdOn":Date.now(),
+                            "isDeleted":false,
+                            "isAcive":true
                         }
-
-                        let tokenHolderTableData = await TokenHolderModel.findOne({
+                        let tokenHolderTableData = await TokenHolderModel.updateHolder({
                             address: tokenHolderObj.address,
                             tokenContract: tokenHolderObj.tokenContract
-                        });
-
-                        if(tokenHolderTableData){ //the holder exists for the token
-                            console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
-                        }
-                        else{ //the holder doesn't exist for the token
-                            console.log("Holder ADDING **************", j)
-                            let holder = new TokenHolderModel(tokenHolderObj)
-                            await holder.saveData();
-                            console.log("holder =====", holder)
-                        }
+                        },tokenHolderObj);
+                        console.log("Holder **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                        // if(tokenHolderTableData){ //the holder exists for the token
+                        //     console.log("Holder EXISTS **********", tokenHolderTableData.address, tokenHolderTableData.tokenName, x,  j)
+                        // }
+                        // else{ //the holder doesn't exist for the token
+                        //     console.log("Holder ADDING **************", j)
+                        //     let holder = new TokenHolderModel(tokenHolderObj)
+                        //     await holder.saveData();
+                        //     console.log("holder =====", holder)
+                        // }
 
                         // tokenHolderObjArray.push(tokenHolderObj);
 
@@ -381,8 +409,8 @@ export default class SyncManager {
                         // let numberOfTransfersApiCalls = (parsedTransfersResponse.pages > 1) ?
 
                         for(let z = 0; z<parsedTransfersResponseDummy.pages; z++){
-
-                            let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + z+1 + "&limit=50"
+                            let num1=z+1;
+                            let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + num1 + "&limit=50"
 
                             let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
@@ -417,23 +445,27 @@ export default class SyncManager {
                                         "contract": transfersArr[t].address,
                                         "value": transfersArr[t].value,
                                         "timestamp": Date.parse(transfersArr[t].timestamp)/1000, //conversion to epoch in seconds
-
+                                        "modifiedOn": Date.now(),
+                                        "createdOn":  Date.now(),
+                                        "isDeleted":  false ,
+                                        "isActive":  true
                                     }
 
-                                    let tokenTransferTableData = await TransferTokenModel.findOne({
+                                    let tokenTransferTableData = await TransferTokenModel.updateToken({
                                         hash: tokenTransferObj.hash,
                                         contract: tokenTransferObj.contract
-                                    });
+                                    },tokenTransferObj);
 
-                                    if(tokenTransferTableData){
-                                        console.log("Transfer EXISTS ************", tokenTransferTableData.hash, z, t)
-                                    }
-                                    else{
-                                        console.log("Transfer ADDING ***************", t)
-                                        let transfer = new TransferTokenModel(tokenTransferObj)
-                                        await transfer.saveData();
-                                        console.log("transfer =====", transfer)
-                                    }
+                                    console.log("tokenTransferTableData",tokenTransferTableData);
+                                    // if(tokenTransferTableData){
+                                    //     console.log("Transfer EXISTS ************", tokenTransferTableData.hash, z, t)
+                                    // }
+                                    // else{
+                                    //     console.log("Transfer ADDING ***************", t)
+                                    //     let transfer = new TransferTokenModel(tokenTransferObj)
+                                    //     await transfer.saveData();
+                                    //     console.log("transfer =====", transfer)
+                                    // }
 
 
                                 }

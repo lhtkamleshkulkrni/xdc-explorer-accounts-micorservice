@@ -27,7 +27,7 @@ TokenTransferSchem.static({
   },
   updateToken: function (findObj, updateObj) {
     return this.findOneAndUpdate(findObj, updateObj, {
-      returnNewDocument: true,
+      upsert: true,
     });
   },
   updateManyTokens: function (findObj, updateObj) {

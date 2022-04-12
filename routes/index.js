@@ -172,7 +172,7 @@ module.exports = (app) => {
   );
 
   app.get(
-      "/update-token-holders-and-transfers-for-one-token/:hash",
+      "/update-token-holders-and-transfers-for-one-token/",
       new SyncController().updateTokenHoldersAndTokenTransfersForGivenToken
   );
 
