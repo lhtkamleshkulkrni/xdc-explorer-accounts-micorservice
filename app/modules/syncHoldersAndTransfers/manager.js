@@ -298,11 +298,15 @@ export default class SyncManager {
 
             await this.checkToken(evalTokenDetailsRes);
 
+            console.log("sgdsgcxbnsvanbvb yehgvbvnb")
+
             let numberOfHolderApiCalls = (evalTokenDetailsRes.holderCount)/50;
+
+            console.log("numberOfHolderApiCalls **************", numberOfHolderApiCalls);
 
             for(let x = 1; x <= numberOfHolderApiCalls; x++){
 
-
+                console.log("x =-============", x);
                 let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + evalTokenDetailsRes.hash + "&page=" + x + "&limit=50"
 
                 let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
