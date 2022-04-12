@@ -30,7 +30,7 @@ export default class SyncManager {
                 let num=y+1;
                 let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
 
-                console.log("tokenDetailsUrl ", tokenDetailsUrl);
+                // console.log("tokenDetailsUrl ", tokenDetailsUrl);
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
 
@@ -253,13 +253,16 @@ export default class SyncManager {
     checkToken = async (token) => {
 
         let contractData = await ContractModel.findOne({
-            address: token.hash
+            address: token.hash,
+            ERC: 2
         });
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
-           await ContractModel.updateContract({
-                address: token.hash
-            },{ERC:2})
+           // await ContractModel.updateContract({
+           //      address: token.hash
+           //  },{ERC:2})
+            tokenProcessed++;
+            console.log("tokenProcessed ==========================", tokenProcessed);
             return true;
         }
         else{
@@ -294,8 +297,10 @@ export default class SyncManager {
            let res= await contract.saveData();
             console.log("contract saved=====",res);
             console.log("contract =====", contract)
+
+            tokenProcessed++;
+            console.log("tokenProcessed ==========================", tokenProcessed);
         }
-        tokenProcessed++;
 
     }
 
