@@ -6,7 +6,7 @@ import Utils from "../../utils";
 import HttpService from "../../service/http-service";
 import {httpConstants} from "../../common/constants";
 import Web3 from "web3";
-
+let tokenProcessed=0;
 export default class SyncManager {
     updateTokenHoldersAndTokenTransfersForXRC20 = async () => {
 
@@ -245,6 +245,8 @@ export default class SyncManager {
         catch(err){
             console.log("errroooor=-=-=-=-", err);
         }
+
+        console.log("tokenProcessed",tokenProcessed);
     };
 
 
@@ -253,7 +255,6 @@ export default class SyncManager {
         let contractData = await ContractModel.findOne({
             address: token.hash
         });
-
         if(contractData){
             console.log("Token EXISTS =====", contractData.address)
            await ContractModel.updateContract({
@@ -290,9 +291,11 @@ export default class SyncManager {
             }
 
             let contract = new ContractModel(newContract)
-            await contract.saveData();
+           let res= await contract.saveData();
+            console.log("contract saved=====",res);
             console.log("contract =====", contract)
         }
+        tokenProcessed++;
 
     }
 
