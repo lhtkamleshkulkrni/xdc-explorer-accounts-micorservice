@@ -495,12 +495,12 @@ export default class ContractManager {
     if (req.body.keywords) {
       queryStr = {
         $or: [
-          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" } },
+          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" }, from: address },
+          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" }, to: address },
         ],
-        from: address,
       };
     } else {
-      queryStr = { from: address };
+      queryStr = { $or: [{ from: address }, { to: address }] };
     }
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });

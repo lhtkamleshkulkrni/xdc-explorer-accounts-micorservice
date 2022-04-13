@@ -129,4 +129,68 @@ export default class SyncController {
             httpConstants.RESPONSE_CODES.OK
         );
     }
+
+
+
+
+    async updateTokenHoldersForAllTokens(request, response) {
+        Utils.lhtLog(
+            "SyncController:updateTokenHoldersForAllTokens",
+            "",
+            "",
+            "",
+            httpConstants.LOG_LEVEL_TYPE.INFO
+        );
+        let [error, updateTokenHoldersResponse] = await Utils.parseResponse(
+            new SyncManager().updateTokenHoldersForAllTokens()
+        );
+        if (error) {
+            Utils.lhtLog(
+                "SyncController:updateTokenHoldersForAllTokens",
+                "updateTokenHoldersForAllTokens err",
+                error,
+                "",
+                "ERROR"
+            );
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(
+            response,
+            updateTokenHoldersResponse,
+            apiSuccessMessage.HOLDERS_UPDATED_SUCCESSFULLY,
+            httpConstants.RESPONSE_STATUS.SUCCESS,
+            httpConstants.RESPONSE_CODES.OK
+        );
+    }
+
+
+    async updateTokenTransfersForAllTokens(request, response) {
+        Utils.lhtLog(
+            "SyncController:updateTokenTransfersForAllTokens",
+            "",
+            "",
+            "",
+            httpConstants.LOG_LEVEL_TYPE.INFO
+        );
+        let [error, updateTokenTransfersResponse] = await Utils.parseResponse(
+            new SyncManager().updateTokenTransfersForAllTokens()
+        );
+        if (error) {
+            Utils.lhtLog(
+                "SyncController:updateTokenTransfersForAllTokens",
+                "updateTokenTransfersForAllTokens err",
+                error,
+                "",
+                "ERROR"
+            );
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(
+            response,
+            updateTokenTransfersResponse,
+            apiSuccessMessage.HOLDERS_UPDATED_SUCCESSFULLY,
+            httpConstants.RESPONSE_STATUS.SUCCESS,
+            httpConstants.RESPONSE_CODES.OK
+        );
+    }
 }

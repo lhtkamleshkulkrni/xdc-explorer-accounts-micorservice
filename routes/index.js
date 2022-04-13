@@ -188,4 +188,17 @@ module.exports = (app) => {
       new SyncController().updateTokenTransfersForOneToken
   );
 
+
+
+
+  app.get(
+      "/update-token-holders-for-all-tokens/",
+      new SyncController().updateTokenHoldersForAllTokens
+  );
+
+  app.get(
+      "/update-token-transfers-for-all-tokens/",
+      new SyncController().updateTokenTransfersForAllTokens
+  );
+
 };
