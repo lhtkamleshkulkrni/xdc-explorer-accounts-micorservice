@@ -12,7 +12,7 @@ export default class SyncManager {
 
         try{
 
-            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=50&type=xrc20";
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc20";
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
@@ -25,10 +25,10 @@ export default class SyncManager {
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
             console.log("totalPagesForTokens",totalPagesForTokens);
-            for(let y=0; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
+            for(let y=1; y<totalPagesForTokens; y++){ //the loop needs to be called totalPagesForTokens times
                 console.log("inside loop",y);
                 let num=y+1;
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=50&type=xrc20";
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=20&type=xrc20";
 
                 // console.log("tokenDetailsUrl ", tokenDetailsUrl);
 
@@ -61,7 +61,7 @@ export default class SyncManager {
 
                     // let tokenHolderObjArray = [];
 
-                    for(let i = 19; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
+                    for(let i = 0; i < numberOfTokens; i++){  // i < numberOfTokens (number of tokens for which the details are fetched in 'tokenDetailsResponse')
 
                         //the loop starting from "WTK" token
 
@@ -69,14 +69,14 @@ export default class SyncManager {
                         // console.log("token checked",tokensArr[i].hash)
                         // continue;
                         // console.log("token checked after continue",tokensArr[i].hash)
-                        let numberOfHolderApiCalls = (tokensArr[i].holderCount)/50;
+                        let numberOfHolderApiCalls = (tokensArr[i].holderCount)/20;
 
                         for(let x = 1; x <= numberOfHolderApiCalls; x++){
 
 
                             // let holderDataUrl = "https://xdc.blocksscan.io/api/token-holders?address=" + tokensArr[i].hash + "&page=" + x + "&limit=50"
 
-                            let holderDataUrl = "https://explorer.xinfin.network/api/token-holders?page=" + x + "&limit=50&address=" + tokensArr[i].hash
+                            let holderDataUrl = "https://explorer.xinfin.network/api/token-holders?page=" + x + "&limit=20&address=" + tokensArr[i].hash
 
                             let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '') //this api shpuld be called here in a loop for tokensArr[i].holderCount/50 times
 
@@ -142,7 +142,7 @@ export default class SyncManager {
 
                                     // let transferUrlDummy = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=1&limit=50"
 
-                                    let transferUrlDummy = "https://explorer.xinfin.network/api/token-txs/xrc20?page=1&limit=50&token=" + tokenHolderObj.tokenContract + "&holder=" + tokenHolderObj.address
+                                    let transferUrlDummy = "https://explorer.xinfin.network/api/token-txs/xrc20?page=1&limit=20&token=" + tokenHolderObj.tokenContract + "&holder=" + tokenHolderObj.address
 
                                     let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
 
@@ -166,7 +166,7 @@ export default class SyncManager {
                                         let nums=z+1;
                                         // let transferUrl = "https://xdc.blocksscan.io/api/token-txs/xrc20?holder=" + tokenHolderObj.address + "&token=" + tokenHolderObj.tokenContract + "&page=" + nums + "&limit=50"
 
-                                        let transferUrl = "https://explorer.xinfin.network/api/token-txs/xrc20?page=" + nums + "&limit=50&token=" + tokenHolderObj.tokenContract + "&holder=" + tokenHolderObj.address
+                                        let transferUrl = "https://explorer.xinfin.network/api/token-txs/xrc20?page=" + nums + "&limit=20&token=" + tokenHolderObj.tokenContract + "&holder=" + tokenHolderObj.address
 
                                         let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
