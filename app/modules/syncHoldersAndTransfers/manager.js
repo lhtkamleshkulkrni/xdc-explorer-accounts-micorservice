@@ -267,15 +267,14 @@ export default class SyncManager {
 
         let contractData = await ContractModel.findOne({
             address: token.hash,
-            ERC: 2
         });
         if(contractData){
-            console.log("Token EXISTS =====", contractData.address)
-           // await ContractModel.updateContract({
-           //      address: token.hash
-           //  },{ERC:2})
-            tokenProcessed++;
-            console.log("tokenProcessed ==========================", tokenProcessed);
+
+            let updatedToken = await ContractModel.updateContract({
+                 address: token.hash
+            },{ERC:721})
+
+            console.log("Token EXISTS =====", updatedToken.address)
             return true;
         }
         else{
@@ -284,19 +283,24 @@ export default class SyncManager {
             let web3 = new Web3("wss://LeewayHertzXDCWS.BlocksScan.io");
 
             let address = "0x" + token.hash.slice(3)
+            console.log("address ===========================>", address, token.hash);
             let bytecode;
-            try{
-            bytecode = await web3.eth.getCode(address, function(err, result){
-                console.log("ERROR WHILE FETCHING THE BYTECODE OF THE TOKEN", err)
-            })}
-            catch(err){
 
+            try{
+                bytecode = await web3.eth.getCode(address, function(err, result){
+                    if(err){
+                        console.log("INSIDE BYTECODE ERROR =-=-=-=-=-=", err);
+                    }
+                })
+            }
+            catch(err){
+                console.log("BYTECODE ERROR =-=-=-=-=-=-=-=-=-=", err)
             }
 
             let newContract = {
                 "address": token.hash ? token.hash : "",
                 "holdersCount": token.holderCount ? token.holderCount : 0,
-                "ERC": 2,
+                "ERC": 721,
                 "contractName": token.name ? token.name : "",
                 "tokenName": token.name ? token.name : "",
                 "symbol": token.symbol ? token.symbol : "",
@@ -307,12 +311,10 @@ export default class SyncManager {
             }
 
             let contract = new ContractModel(newContract)
-           let res= await contract.saveData();
-            console.log("contract saved=====",res);
-            console.log("contract =====", contract)
+            let res = await contract.saveData();
 
-            tokenProcessed++;
-            console.log("tokenProcessed ==========================", tokenProcessed);
+            console.log("contract saved====================", res);
+
         }
 
     }
@@ -720,7 +722,7 @@ export default class SyncManager {
     updateTokenHoldersForAllTokens = async () => {
         try{
 
-            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc20";
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc721";
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
@@ -734,15 +736,13 @@ export default class SyncManager {
 
             let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
 
-            console.log("totalPagesForTokens -=-=-=-=-=-=-=-=-=-=>",totalPagesForTokens);
+            // console.log("totalPagesForTokens -=-=-=-=-=-=-=-=-=-=>",totalPagesForTokens);
 
-            for(let y=1; y<totalPagesForTokens; y++){
+            for(let y=1; y<=totalPagesForTokens; y++){
 
-                let num=y+1;
+                console.log("TOKENS API PAGE NUMBER (Y) ===========>", y)
 
-                console.log("TOKENS API PAGE NUMBER (Y) ===========>", num)
-
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=20&type=xrc20";
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y + "&limit=20&type=xrc721";
 
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
@@ -768,10 +768,32 @@ export default class SyncManager {
                     let tokensArr = evalTokenDetailsResponse.items;
 
                     for(let i = 0; i < numberOfTokens; i++){
-                        let numberOfHolderApiCalls = Math.ceil((tokensArr[i].holderCount)/20);
+                        // let numberOfHolderApiCalls = Math.ceil((tokensArr[i].holderCount)/20);
 
-                        for(let x = 1; x <= numberOfHolderApiCalls; x++){
-                            let holderDataUrl = "https://explorer.xinfin.network/api/token-holders?page=" + x + "&limit=20&address=" + tokensArr[i].hash
+                        let holderDataUrlDummy = "https://explorer.xinfin.network/api/token-holders/nft?page=1&limit=20&address=" + tokensArr[i].hash
+
+                        let holderDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrlDummy, '')
+
+                        let evalHolderDetailsResponseDummy;
+
+                        try{
+                            evalHolderDetailsResponseDummy = (holderDetailsResponseDummy && (typeof holderDetailsResponseDummy === 'string') && (holderDetailsResponseDummy !== "")) ? JSON.parse(holderDetailsResponseDummy) : holderDetailsResponseDummy;
+                        }
+                        catch(err){
+                            console.log("i loop continue =-=-=-=-==-", err)
+                            continue;
+                        }
+
+                        if(typeof evalHolderDetailsResponseDummy !== 'object'){
+                            console.log("evalHolderDetailsResponse continueeeee =-=-=-=-=-=", evalHolderDetailsResponseDummy )
+                            continue;
+                        }
+
+                        for(let x = 1; x <= evalHolderDetailsResponseDummy.pages; x++){
+                            console.log("i and x ========================================", i, "and" , x, tokensArr[i].hash);
+                            // let holderDataUrl = "https://explorer.xinfin.network/api/token-holders?page=" + x + "&limit=20&address=" + tokensArr[i].hash
+
+                            let holderDataUrl = "https://explorer.xinfin.network/api/token-holders/nft?page=" + x + "&limit=20&address=" + tokensArr[i].hash
 
                             let holderDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, holderDataUrl, '')
 
@@ -790,7 +812,7 @@ export default class SyncManager {
                                 continue;
                             }
 
-                            console.log("HOLDERS API RESPONSE FOR PAGE", x , " FOR TOKEN ===========> ",  evalHolderDetailsResponse)
+                            // console.log("HOLDERS API RESPONSE FOR PAGE", x , " FOR TOKEN ===========> ",  evalHolderDetailsResponse)
 
                             if(evalHolderDetailsResponse && evalHolderDetailsResponse.items && evalHolderDetailsResponse.items.length > 0) {
 
@@ -801,7 +823,7 @@ export default class SyncManager {
 
                                     let tokenHolderObj = {
                                         "tokenContract": tokensArr[i].hash ? tokensArr[i].hash : "",
-                                        "address": holdersArr[j].hash ? holdersArr[j].hash : "",
+                                        "address": holdersArr[j].holder ? holdersArr[j].holder : "",
                                         "decimals": tokensArr[i].decimals ? tokensArr[i].decimals : 0,
                                         "symbol": tokensArr[i].symbol ? tokensArr[i].symbol : "",
                                         "tokenName": tokensArr[i].name ? tokensArr[i].name : "",
@@ -853,7 +875,7 @@ export default class SyncManager {
     updateTokenTransfersForAllTokens = async () => {
         try{
 
-            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc20";
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc721";
 
             let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
 
@@ -869,13 +891,13 @@ export default class SyncManager {
 
             console.log("totalPagesForTokens -=-=-=-=-=-=-=-=-=-=>",totalPagesForTokens);
 
-            for(let y=1; y<totalPagesForTokens; y++){
+            for(let y=1; y<=totalPagesForTokens; y++){
 
-                let num=y+1;
+                // let num=y+1;
 
-                console.log("TOKENS API PAGE NUMBER (Y) ===========>", num)
+                console.log("TOKENS API PAGE NUMBER (Y) ===========>", y)
 
-                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + num + "&limit=20&type=xrc20";
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y + "&limit=20&type=xrc721";
 
 
                 let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
@@ -902,7 +924,10 @@ export default class SyncManager {
 
                     for(let i = 0; i < numberOfTokens; i++) {
 
-                        let transferUrlDummy = "https://explorer.xinfin.network/api/token-txs/xrc20?page=1&limit=20&token=" + tokensArr[i].hash
+                        console.log("LOOP FOR TOKEN =============================================================>", tokensArr[i].name)
+
+                        let transferUrlDummy = "https://explorer.xinfin.network/api/token-txs/xrc721?page=1&limit=20&token=" + tokensArr[i].hash
+
 
                         let transfersResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrlDummy, '')
 
@@ -925,7 +950,7 @@ export default class SyncManager {
 
                             let nums=z+1;
 
-                            let transferUrl = "https://explorer.xinfin.network/api/token-txs/xrc20?page=" + nums + "&limit=20&token=" + tokensArr[i].hash
+                            let transferUrl = "https://explorer.xinfin.network/api/token-txs/xrc721?page=" + nums + "&limit=20&token=" + tokensArr[i].hash
 
                             let transfersResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, transferUrl, '')
 
@@ -1003,6 +1028,74 @@ export default class SyncManager {
         }
         catch(err){
             console.log("PARENT TRY/CATCH BLOCK ERROR =====>", err)
+        }
+    }
+
+
+    updateXrc721Tokens = async () => {
+        try{
+
+            let tokenDetailsUrlDummy = "https://explorer.xinfin.network/api/tokens?page=1&limit=20&type=xrc721";
+
+            let tokenDetailsResponseDummy = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrlDummy, '')
+
+            let evalTokenDetailsResponseDummy = (tokenDetailsResponseDummy && (typeof tokenDetailsResponseDummy === 'string') && (tokenDetailsResponseDummy !== "") ) ? JSON.parse(tokenDetailsResponseDummy) : tokenDetailsResponseDummy;
+
+            if(typeof evalTokenDetailsResponseDummy !== 'object'){
+                return;
+            }
+
+            let totalPagesForTokens = evalTokenDetailsResponseDummy.pages;
+
+            console.log("totalPagesForTokens",totalPagesForTokens);
+            for(let y=1; y<=totalPagesForTokens; y++){
+
+
+                let tokenDetailsUrl = "https://explorer.xinfin.network/api/tokens?page=" + y + "&limit=20&type=xrc721";
+
+                // console.log("tokenDetailsUrl ", tokenDetailsUrl);
+
+                let tokenDetailsResponse = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, tokenDetailsUrl, '')
+
+                let evalTokenDetailsResponse;
+
+                try{
+                    evalTokenDetailsResponse = (tokenDetailsResponse && (typeof tokenDetailsResponse === 'string') && (tokenDetailsResponse !== "")) ? JSON.parse(tokenDetailsResponse) : tokenDetailsResponse;
+                }
+                catch(err){
+                    console.log(err,"catch err BREAK");
+                }
+
+                if(typeof evalTokenDetailsResponse !== 'object'){
+                    console.log("evalTokenDetailsResponse not object BREAK");
+                    continue;
+                }
+
+                console.log("evalTokenDetailsResponse ============================>", evalTokenDetailsResponse);
+
+                if(evalTokenDetailsResponse && evalTokenDetailsResponse.items && evalTokenDetailsResponse.items.length > 0){
+
+                    console.log("tokenDetailsResponse ", evalTokenDetailsResponse.items.length);
+
+                    let numberOfTokens = evalTokenDetailsResponse.items.length;
+
+                    let tokensArr = evalTokenDetailsResponse.items;
+
+                    // let tokenHolderObjArray = [];
+
+                    console.log("numberOfTokens ====================", numberOfTokens)
+
+                    for(let i = 0; i < numberOfTokens; i++){
+                        await this.checkToken(tokensArr[i]);
+                    }
+
+                }
+
+            }
+
+        }
+        catch(err){
+
         }
     }
 
