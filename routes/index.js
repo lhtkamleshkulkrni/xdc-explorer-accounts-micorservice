@@ -201,4 +201,9 @@ module.exports = (app) => {
       new SyncController().updateTokenTransfersForAllTokens
   );
 
+  app.get(
+      "/update-xrc721-tokens/",
+      new SyncController().updateXrc721Tokens
+  );
+
 };
