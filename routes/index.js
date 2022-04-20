@@ -91,6 +91,8 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
+  app.post("/get-Contracts", new ContractController().getContracts);
+
   app.post(
     "/update-contracts/:contractAddress",
     ValidationManger.validateContractAddress,

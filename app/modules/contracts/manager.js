@@ -659,4 +659,10 @@ export default class ContractManager {
     return true;
   };
 
+  getContracts = async (request) => {
+   const contracts = await ContractModel.find(request);
+   if (!contracts || !contracts.length) throw `No contract found`;
+   return contracts;
+  }
+
 }
