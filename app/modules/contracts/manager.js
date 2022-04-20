@@ -659,8 +659,8 @@ export default class ContractManager {
     return true;
   };
 
-  getContractsByOwnerAddress = async (request) => {
-   const contracts = await ContractModel.find({owner: request.ownerAddress});
+  getContracts = async (request) => {
+   const contracts = await ContractModel.find(request);
    if (!contracts || !contracts.length) throw `No contract found`;
    return contracts;
   }

@@ -91,7 +91,7 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
-  app.get("/get-Contracts-by-owner/:ownerAddress", new ContractController().getContractsByOwnerAddress);
+  app.post("/get-Contracts", new ContractController().getContracts);
 
   app.post(
     "/update-contracts/:contractAddress",

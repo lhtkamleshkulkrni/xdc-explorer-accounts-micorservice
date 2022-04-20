@@ -427,21 +427,21 @@ export default class ContractController {
     );
   }
 
-  async getContractsByOwnerAddress(request, response) {
+  async getContracts(request, response) {
     Utils.lhtLog(
-      "ContractController:getContractsByOwnerAddress",
+      "ContractController:getContracts",
       "",
       "",
       "",
       httpConstants.LOG_LEVEL_TYPE.INFO
     );
-    let [error, contractsByOwnerAddress] = await Utils.parseResponse(
-      new ContractManager().getContractsByOwnerAddress(request.params)
+    let [error, contracts] = await Utils.parseResponse(
+      new ContractManager().getContracts(request.body)
     );
     if (error) {
       Utils.lhtLog(
-        "ContractController:getContractsByOwnerAddress",
-        "getContractsByOwnerAddress err",
+        "ContractController:getContracts",
+        "getContracts err",
         error,
         "",
         "ERROR"
@@ -450,7 +450,7 @@ export default class ContractController {
     }
     return Utils.response(
       response,
-      contractsByOwnerAddress,
+      contracts,
       apiSuccessMessage.TOTAL_TRANSFERS_UPDATED_SUCCESSFULLY,
       httpConstants.RESPONSE_STATUS.SUCCESS,
       httpConstants.RESPONSE_CODES.OK
