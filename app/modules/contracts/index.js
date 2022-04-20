@@ -427,4 +427,34 @@ export default class ContractController {
     );
   }
 
+  async getContractsByOwnerAddress(request, response) {
+    Utils.lhtLog(
+      "ContractController:getContractsByOwnerAddress",
+      "",
+      "",
+      "",
+      httpConstants.LOG_LEVEL_TYPE.INFO
+    );
+    let [error, contractsByOwnerAddress] = await Utils.parseResponse(
+      new ContractManager().getContractsByOwnerAddress(request.params)
+    );
+    if (error) {
+      Utils.lhtLog(
+        "ContractController:getContractsByOwnerAddress",
+        "getContractsByOwnerAddress err",
+        error,
+        "",
+        "ERROR"
+      );
+      return Utils.handleError([error], request, response);
+    }
+    return Utils.response(
+      response,
+      contractsByOwnerAddress,
+      apiSuccessMessage.TOTAL_TRANSFERS_UPDATED_SUCCESSFULLY,
+      httpConstants.RESPONSE_STATUS.SUCCESS,
+      httpConstants.RESPONSE_CODES.OK
+    );
+  }
+
 }
