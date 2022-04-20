@@ -193,4 +193,36 @@ export default class SyncController {
             httpConstants.RESPONSE_CODES.OK
         );
     }
+
+
+
+    async updateXrc721Tokens(request, response) {
+        Utils.lhtLog(
+            "SyncController:updateXrc721Tokens",
+            "",
+            "",
+            "",
+            httpConstants.LOG_LEVEL_TYPE.INFO
+        );
+        let [error, updateTokenTransfersResponse] = await Utils.parseResponse(
+            new SyncManager().updateXrc721Tokens()
+        );
+        if (error) {
+            Utils.lhtLog(
+                "SyncController:updateXrc721Tokens",
+                "updateXrc721Tokens err",
+                error,
+                "",
+                "ERROR"
+            );
+            return Utils.handleError([error], request, response);
+        }
+        return Utils.response(
+            response,
+            updateTokenTransfersResponse,
+            apiSuccessMessage.HOLDERS_UPDATED_SUCCESSFULLY,
+            httpConstants.RESPONSE_STATUS.SUCCESS,
+            httpConstants.RESPONSE_CODES.OK
+        );
+    }
 }

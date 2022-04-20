@@ -91,6 +91,8 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
+  app.post("/get-contracts", new ContractController().getContracts);
+
   app.post(
     "/update-contracts/:contractAddress",
     ValidationManger.validateContractAddress,
@@ -199,6 +201,11 @@ module.exports = (app) => {
   app.get(
       "/update-token-transfers-for-all-tokens/",
       new SyncController().updateTokenTransfersForAllTokens
+  );
+
+  app.get(
+      "/update-xrc721-tokens/",
+      new SyncController().updateXrc721Tokens
   );
 
 };
