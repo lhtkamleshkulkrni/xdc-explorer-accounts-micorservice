@@ -308,7 +308,7 @@ async function getHistoryPriceData(contracts) {
     .format("YYYY-MM-DD")
     const endTime = moment().subtract(2, "day").endOf("day").format("YYYY-MM-DD");
     let data = [];
-    for (let index = 0; index < 1; index++) {
+    for (let index = 0; index < contracts.length; index++) {
       const selectedContract = contracts[index];
       if (!selectedContract || !selectedContract._id) {
         continue;
@@ -361,9 +361,8 @@ async function getHistoryPriceData(contracts) {
           upsert: true,
         },
       });
-    return data;
   }
- 
+  return data; 
 }
 
 // &convert=INR
