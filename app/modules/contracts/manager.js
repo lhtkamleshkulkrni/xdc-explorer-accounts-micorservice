@@ -325,7 +325,6 @@ export default class ContractManager {
   }
 
   async getListOfHoldersForToken(req) {
-    console.log(req, ">>>>")
     Utils.lhtLog(
       "ContractManager:getListOfHoldersForToken",
       "getListOfHoldersForToken",
