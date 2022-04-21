@@ -325,7 +325,7 @@ export default class ContractManager {
   }
 
   async getListOfHoldersForToken(req) {
-    console.log(req,">>>>")
+    console.log(req, ">>>>")
     Utils.lhtLog(
       "ContractManager:getListOfHoldersForToken",
       "getListOfHoldersForToken",
@@ -383,7 +383,7 @@ export default class ContractManager {
       let percentage =
         (Number(t.balance) /
           totalSupply) * 100
-
+      percentage = percentage > 100 ? 100 : percentage
       let quantity =
         Number(t.balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
