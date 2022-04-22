@@ -325,7 +325,6 @@ export default class ContractManager {
   }
 
   async getListOfHoldersForToken(req) {
-    console.log(req,">>>>")
     Utils.lhtLog(
       "ContractManager:getListOfHoldersForToken",
       "getListOfHoldersForToken",
@@ -383,7 +382,7 @@ export default class ContractManager {
       let percentage =
         (Number(t.balance) /
           totalSupply) * 100
-
+      percentage = percentage > 100 ? 100 : percentage
       let quantity =
         Number(t.balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
@@ -486,6 +485,7 @@ export default class ContractManager {
   }
 
   async getHolderDetailsUsingAddress(req) {
+
     Utils.lhtLog("ContractManager:getHolderDetailsUsingAddress", "", "", "");
     let result = [];
     let address = req.body.address;
@@ -505,17 +505,41 @@ export default class ContractManager {
     }
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
-    let holderTransactions = await TransferTokenModel.find(queryStr, {
-      hash: 1,
-      timestamp: 1,
-      blockNumber: 1,
-      from: 1,
-      to: 1,
-      value: 1,
-    })
-      .skip(skip)
-      .limit(limit)
-      .sort(req.body.sortKey ? req.body.sortKey : { value: -1 });
+    let holderTransactions;
+    if (Object.keys(req.body.sortKey)[0] === "value") {
+      holderTransactions = await TransferTokenModel.aggregate([
+        { $match: { $or: [{ from: address }, { to: address }] } },
+        {
+          $addFields: {
+            "MyStringValueSize": { $strLenCP: "$value" }
+          }
+        },
+        {
+          $sort: {
+            "MyStringValueSize": req.body.sortKey.value ? req.body.sortKey.value : -1,
+            "value": req.body.sortKey.value ? req.body.sortKey.value : -1
+          }
+        },
+        {
+          $skip: skip
+        },
+        {
+          $limit: limit
+        }
+      ])
+    } else {
+      holderTransactions = await TransferTokenModel.find(queryStr, {
+        hash: 1,
+        timestamp: 1,
+        blockNumber: 1,
+        from: 1,
+        to: 1,
+        value: 1,
+      })
+        .skip(skip)
+        .limit(limit)
+        .sort(req.body.sortKey ? req.body.sortKey : { value: -1 });
+    }
     let holderTransactionsCount = await TransferTokenModel.countDocuments(
       queryStr
     );
