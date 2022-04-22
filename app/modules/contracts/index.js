@@ -426,4 +426,35 @@ export default class ContractController {
       httpConstants.RESPONSE_CODES.OK
     );
   }
+
+  async getContracts(request, response) {
+    Utils.lhtLog(
+      "ContractController:getContracts",
+      "",
+      "",
+      "",
+      httpConstants.LOG_LEVEL_TYPE.INFO
+    );
+    let [error, contracts] = await Utils.parseResponse(
+      new ContractManager().getContracts(request.body)
+    );
+    if (error) {
+      Utils.lhtLog(
+        "ContractController:getContracts",
+        "getContracts err",
+        error,
+        "",
+        "ERROR"
+      );
+      return Utils.handleError([error], request, response);
+    }
+    return Utils.response(
+      response,
+      contracts,
+      apiSuccessMessage.TOTAL_TRANSFERS_UPDATED_SUCCESSFULLY,
+      httpConstants.RESPONSE_STATUS.SUCCESS,
+      httpConstants.RESPONSE_CODES.OK
+    );
+  }
+
 }

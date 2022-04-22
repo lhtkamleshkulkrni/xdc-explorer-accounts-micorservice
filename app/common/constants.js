@@ -72,7 +72,8 @@ export const apiSuccessMessage = {
   TOTAL_TOKENS_FETCH_SUCCESSFULLY: "Total Tokens fetched successfully",
   SEARCH_SUCCESSFULL: "Search Successfull",
   ACCOUNT_BY_TRANCHE_FETCH_SUCCESFULLY:"Total Accounts by tranche fetched successfully",
-  ACCOUNT_RANKING_FETCH_SUCCESSFULLY:"Account Ranking fetched successfully"
+  ACCOUNT_RANKING_FETCH_SUCCESSFULLY:"Account Ranking fetched successfully",
+  HOLDERS_UPDATED_SUCCESSFULLY: "Holders and Token transfers updated successfully"
 };
 
 export const apiEndpoints = {

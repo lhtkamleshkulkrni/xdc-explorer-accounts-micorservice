@@ -496,13 +496,17 @@ export default class ContractManager {
     if (req.body.keywords) {
       queryStr = {
         $or: [
-          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" } },
+          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" }, from: address },
+          { hash: { $regex: req.body.keywords.toLowerCase(), $options: "i" }, to: address },
         ],
-        from: address,
       };
     } else {
+<<<<<<< HEAD
       queryStr = { $or: [{ to: address }, { from: address }] };
 
+=======
+      queryStr = { $or: [{ from: address }, { to: address }] };
+>>>>>>> 705947c53a58dc931bb71acc17a308a6a6d8002e
     }
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
@@ -683,4 +687,11 @@ export default class ContractManager {
     }
     return true;
   };
+
+  getContracts = async (request) => {
+   const contracts = await ContractModel.find(request);
+   if (!contracts || !contracts.length) throw `No contract found`;
+   return contracts;
+  }
+
 }

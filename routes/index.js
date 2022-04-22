@@ -9,6 +9,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../config/swagger.json";
 import { stringConstants } from "../app/common/constants";
 import JobController from "../app/modules/jobs";
+import SyncController from "../app/modules/syncHoldersAndTransfers";
 
 module.exports = (app) => {
   app.get("/", (req, res) => res.send(stringConstants.SERVICE_STATUS_HTML));
@@ -90,6 +91,8 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().getContractSearch
   );
+  app.post("/get-contracts", new ContractController().getContracts);
+
   app.post(
     "/update-contracts/:contractAddress",
     ValidationManger.validateContractAddress,
@@ -162,4 +165,47 @@ module.exports = (app) => {
     "/migrate-transfer-count",
     new ContractController().migrateTokenTransfer
   );
+
+  // APIs for updating holders and transfers for each token
+
+  app.get(
+      "/update-token-holders-and-transfers",
+      new SyncController().updateTokenHoldersAndTokenTransfersForXRC20
+  );
+
+  app.get(
+      "/update-token-holders-and-transfers-for-one-token/",
+      new SyncController().updateTokenHoldersAndTokenTransfersForGivenToken
+  );
+
+  //new Scripts
+
+  app.get(
+      "/update-token-holders-for-one-token/",
+      new SyncController().updateTokenHoldersForOneToken
+  );
+
+  app.get(
+      "/update-token-transfers-for-one-token/",
+      new SyncController().updateTokenTransfersForOneToken
+  );
+
+
+
+
+  app.get(
+      "/update-token-holders-for-all-tokens/",
+      new SyncController().updateTokenHoldersForAllTokens
+  );
+
+  app.get(
+      "/update-token-transfers-for-all-tokens/",
+      new SyncController().updateTokenTransfersForAllTokens
+  );
+
+  app.get(
+      "/update-xrc721-tokens/",
+      new SyncController().updateXrc721Tokens
+  );
+
 };
