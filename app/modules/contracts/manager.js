@@ -501,12 +501,7 @@ export default class ContractManager {
         ],
       };
     } else {
-<<<<<<< HEAD
-      queryStr = { $or: [{ to: address }, { from: address }] };
-
-=======
       queryStr = { $or: [{ from: address }, { to: address }] };
->>>>>>> 705947c53a58dc931bb71acc17a308a6a6d8002e
     }
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
