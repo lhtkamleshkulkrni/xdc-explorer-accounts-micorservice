@@ -528,7 +528,7 @@ export default class ContractManager {
         }
       ])
     } else {
-      console.log("okkkkkkk")
+
       holderTransactions = await TransferTokenModel.find(queryStr, {
         hash: 1,
         timestamp: 1,
