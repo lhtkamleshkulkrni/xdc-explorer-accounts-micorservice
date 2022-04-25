@@ -506,7 +506,7 @@ export default class ContractManager {
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
     let holderTransactions;
-    if (Object.keys(req.body.sortKey)[0] === "value") {
+    if (req.body.sortKey && Object.keys(req.body.sortKey)[0] === "value") {
       holderTransactions = await TransferTokenModel.aggregate([
         { $match: { $or: [{ from: address }, { to: address }] } },
         {
@@ -528,6 +528,7 @@ export default class ContractManager {
         }
       ])
     } else {
+
       holderTransactions = await TransferTokenModel.find(queryStr, {
         hash: 1,
         timestamp: 1,
