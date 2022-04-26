@@ -98,6 +98,11 @@ module.exports = (app) => {
     ValidationManger.validateContractAddress,
     new ContractController().updateContracts
   );
+  app.post(
+    "/getTokenHashDetail/:hash",  
+    ValidationManger.validateHash,
+    new ContractController().getTokenHashDetail
+  );
 
   /*
     Holder APIs
@@ -111,6 +116,11 @@ module.exports = (app) => {
     "/getHolderDetailsUsingAddress",
     ValidationManger.validateHolderDetailsUsingAddress,
     new ContractController().getHolderDetailsUsingAddress
+  );
+  app.post(
+    "/gettokenPriceUsingTimestamp",
+    ValidationManger.validateGetTokenHistoryPrice,
+    new ContractController().gettokenPriceUsingTimestamp
   );
   app.get(
     "/someDaysHolders/:numberOfDays/:address",

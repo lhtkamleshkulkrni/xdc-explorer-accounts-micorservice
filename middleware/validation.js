@@ -43,6 +43,12 @@ module.exports = {
     });
     await validate(schema, req.params, res, next);
   },
+  validateHash: async (req, res, next) => {
+    const schema = yup.object().shape({
+      hash: yup.string().required(),
+    });
+    await validate(schema, req.params, res, next);
+  },
   validateHolderDetailsUsingAddress: async (req, res, next) => {
     const schema = yup.object().shape({
       skip: yup.string().required(),
@@ -65,6 +71,13 @@ module.exports = {
       tokenAddress: yup.string().required(),
       from: yup.number().required(),
       to: yup.number().required(),
+    });
+    await validate(schema, req.body, res, next);
+  },
+  validateGetTokenHistoryPrice: async (req, res, next) => {
+    const schema = yup.object().shape({
+      address: yup.string().required(),
+      timestamp: yup.number().required(),
     });
     await validate(schema, req.body, res, next);
   },
