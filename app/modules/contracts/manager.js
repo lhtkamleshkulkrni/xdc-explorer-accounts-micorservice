@@ -3,6 +3,7 @@ import TokenHolderModel from "../../models/TokenHolder";
 import TransferTokenModel from "../../models/Transfer";
 import AccountTrancheModel from "../../models/AccountTranche";
 import AccountModel from "../../models/Account";
+import HistoryPriceModel from "../../models/historyPrice"
 const moment = require("moment");
 
 import Utils from "../../utils";
@@ -554,6 +555,25 @@ export default class ContractManager {
     return result;
   }
 
+  async gettokenPriceUsingTimestamp(req) {
+
+    Utils.lhtLog("ContractManager:gettokenPriceUsingTimestamp", "", "", "");
+    let address = req.body.address;
+    address = address.toLowerCase();
+    let timestamp = req.body.timestamp;
+    timestamp = timestamp * 1000
+    let query = {
+      $and: [
+        {
+          "timestamp": { $lte: timestamp }
+        },
+        {
+          "tokenAddress": address
+        }
+      ]
+    }
+    return await HistoryPriceModel.getHistoryPriceDataList(query, "", 0, 1, "")
+  }
   async getTokenUsingTokenNameAndAddress(reqObj) {
     Utils.lhtLog(
       "BLManager:getTokenUsingTokenNameAndAddress",
@@ -661,7 +681,16 @@ export default class ContractManager {
       }
     );
   }
-
+  async getTokenHashDetail(param, requestData) {
+    Utils.lhtLog(
+      "ContractManager:getTokenHashDetail",
+      "getTokenHashDetail start",
+      "",
+      ""
+    );
+    let tokenHash = param.hash.toLowerCase();
+    return await TransferTokenModel.getToken({ hash: tokenHash })
+  }
   migrateTokenTransfer = async () => {
     let query = {
       ERC: { $gt: 0 },
@@ -685,9 +714,9 @@ export default class ContractManager {
   };
 
   getContracts = async (request) => {
-   const contracts = await ContractModel.find(request);
-   if (!contracts || !contracts.length) throw `No contract found`;
-   return contracts;
+    const contracts = await ContractModel.find(request);
+    if (!contracts || !contracts.length) throw `No contract found`;
+    return contracts;
   }
 
 }

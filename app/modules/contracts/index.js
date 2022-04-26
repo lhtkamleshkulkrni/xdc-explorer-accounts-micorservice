@@ -276,6 +276,36 @@ export default class ContractController {
     );
   }
 
+  async gettokenPriceUsingTimestamp(request, response) {
+    Utils.lhtLog(
+      "ContractController:gettokenPriceUsingTimestamp",
+      "",
+      "",
+      "",
+      httpConstants.LOG_LEVEL_TYPE.INFO
+    );
+    let [error, tokenPriceDetailsResponse] = await Utils.parseResponse(
+      new ContractManager().gettokenPriceUsingTimestamp(request)
+    );
+    if (error) {
+      Utils.lhtLog(
+        "ContractController:someDaysHolders",
+        "tokenPriceDetailsResponse err",
+        error,
+        "",
+        "ERROR"
+      );
+      return Utils.handleError([error], request, response);
+    }
+    return Utils.response(
+      response,
+      tokenPriceDetailsResponse,
+      apiSuccessMessage.HISTORY_PRICE_FETCHED_SUCCESSFULLY,
+      httpConstants.RESPONSE_STATUS.SUCCESS,
+      httpConstants.RESPONSE_CODES.OK
+    );
+  }
+
   async getListOfTokenForAddress(request, response) {
     Utils.lhtLog(
       "ContractController:getListOfTokenForAddress",
@@ -396,7 +426,36 @@ export default class ContractController {
       httpConstants.RESPONSE_CODES.OK
     );
   }
-
+  
+  async getTokenHashDetail(request, response) {
+    Utils.lhtLog(
+      "ContractController:getTokenHashDetail",
+      "",
+      "",
+      "",
+      httpConstants.LOG_LEVEL_TYPE.INFO
+    );
+    let [error, tokenHashDetailResponse] = await Utils.parseResponse(
+      new ContractManager().getTokenHashDetail(request.params, request.body)
+    );
+    if (error) {
+      Utils.lhtLog(
+        "ContractController:getTokenHashDetail",
+        "tokenHashDetailResponse err",
+        error,
+        "",
+        "ERROR"
+      );
+      return Utils.handleError([error], request, response);
+    }
+    return Utils.response(
+      response,
+      tokenHashDetailResponse,
+      apiSuccessMessage.TOTAL_ACCOUNTS_FETCH_SUCCESSFULLY,
+      httpConstants.RESPONSE_STATUS.SUCCESS,
+      httpConstants.RESPONSE_CODES.OK
+    );
+  }
   async migrateTokenTransfer(request, response) {
     Utils.lhtLog(
       "ContractController:migrateTokenTransfer",
