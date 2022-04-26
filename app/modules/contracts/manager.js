@@ -576,6 +576,7 @@ export default class ContractManager {
     if (!coinMarketData || !coinMarketData.length) {
        coinMarketData =  await HistoryPriceModel.getHistoryPriceDataList({tokenAddress:address}, "", 0, 1, "")
     }
+    return coinMarketData;
   }
 
   async getTokenUsingTokenNameAndAddress(reqObj) {
