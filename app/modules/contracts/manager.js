@@ -572,8 +572,12 @@ export default class ContractManager {
         }
       ]
     }
-    return await HistoryPriceModel.getHistoryPriceDataList(query, "", 0, 1, "")
+    let coinMarketData =  await HistoryPriceModel.getHistoryPriceDataList(query, "", 0, 1, "")
+    if (!coinMarketData || !coinMarketData.length) {
+       coinMarketData =  await HistoryPriceModel.getHistoryPriceDataList({tokenAddress:address}, "", 0, 1, "")
+    }
   }
+
   async getTokenUsingTokenNameAndAddress(reqObj) {
     Utils.lhtLog(
       "BLManager:getTokenUsingTokenNameAndAddress",
@@ -681,7 +685,7 @@ export default class ContractManager {
       }
     );
   }
-  async getTokenHashDetail(param, requestData) {
+  async getTokenHashDetail(param) {
     Utils.lhtLog(
       "ContractManager:getTokenHashDetail",
       "getTokenHashDetail start",

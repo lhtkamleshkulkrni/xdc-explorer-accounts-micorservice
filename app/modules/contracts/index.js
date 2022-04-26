@@ -436,7 +436,7 @@ export default class ContractController {
       httpConstants.LOG_LEVEL_TYPE.INFO
     );
     let [error, tokenHashDetailResponse] = await Utils.parseResponse(
-      new ContractManager().getTokenHashDetail(request.params, request.body)
+      new ContractManager().getTokenHashDetail(request.params)
     );
     if (error) {
       Utils.lhtLog(
