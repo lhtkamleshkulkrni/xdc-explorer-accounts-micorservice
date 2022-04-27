@@ -379,7 +379,10 @@ export default class ContractManager {
       });
     }
     let totalSupply = contractResponse.totalSupply
-    const data = response.map(function (t, index) {
+    const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
+      // if (t.address == tokenAddress) {
+      //    return false ;
+      // }
       let percentage =
         (Number(t.balance) /
           totalSupply) * 100
@@ -397,7 +400,7 @@ export default class ContractManager {
     });
 
 
-    return { data, responseCount };
+    return { data, responseCount:data.length };
   }
 
   async someDaysHolders(req) {
@@ -572,9 +575,9 @@ export default class ContractManager {
         }
       ]
     }
-    let coinMarketData =  await HistoryPriceModel.getHistoryPriceDataList(query, "", 0, 1, "")
+    let coinMarketData = await HistoryPriceModel.getHistoryPriceDataList(query, "", 0, 1, { timestamp: -1 })
     if (!coinMarketData || !coinMarketData.length) {
-       coinMarketData =  await HistoryPriceModel.getHistoryPriceDataList({tokenAddress:address}, "", 0, 1, "")
+      coinMarketData = await HistoryPriceModel.getHistoryPriceDataList({ tokenAddress: address }, "", 0, 1, "")
     }
     return coinMarketData;
   }
