@@ -206,7 +206,7 @@ export default class AccountManager {
       TransactionModel.countDocuments({ from: address }),
       TransactionModel.countDocuments({ to: address }),
     ]);
-    balance = balance / 1000000000000000000;
+    balance = balance / 10 ** 18;
     return {
       balance,
       accountsPoorer,
