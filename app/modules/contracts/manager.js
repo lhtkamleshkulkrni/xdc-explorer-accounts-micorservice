@@ -402,7 +402,6 @@ export default class ContractManager {
 
     return { data, responseCount:data.length };
   }
-
   async someDaysHolders(req) {
     Utils.lhtLog("ContractManager:someDaysHolders", "", "", "");
     let numberOfDays = Number(req.params.numberOfDays);
@@ -410,7 +409,7 @@ export default class ContractManager {
     let startTime = parseInt(
       moment().subtract(req.params.numberOfDays, "days").valueOf() / 1000
     );
-
+let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.params.address});
     let responseHolder = await TransferTokenModel.aggregate([
       {
         $match: {
@@ -441,6 +440,8 @@ export default class ContractManager {
           },
           uniqueCount1: { $addToSet: "$to" },
           uniqueCount2: { $addToSet: "$from" },
+          toAddresses:{$addToSet:"$to"},
+          fromAddresses:{$addToSet:"$from"},
           count: { $sum: 1 },
           date: {
             $first: {
@@ -458,6 +459,7 @@ export default class ContractManager {
           },
           toCount: { $size: "$uniqueCount1" },
           fromCount: { $size: "$uniqueCount2" },
+          addresses:{"$concatArrays":["$fromAddresses","$toAddresses"]},
           // total:      {$add:[Number("$toCount"),Number("$fromCount")]},
           count: 1,
           _id: 0,
@@ -468,9 +470,10 @@ export default class ContractManager {
     const resultArray = [];
     if (responseHolder.length > 0)
       responseHolder.map((item) => {
+    let count = [...new Set(item.addresses)].length;
         resultArray.push({
           date: item.date,
-          count: item.toCount + item.fromCount,
+          count: count > holdersCount ? holdersCount : count,
         });
       });
     else {
@@ -487,6 +490,7 @@ export default class ContractManager {
 
     return resultArray;
   }
+
 
   async getHolderDetailsUsingAddress(req) {
 
