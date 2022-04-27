@@ -12,7 +12,9 @@ export default class CoinMarketManager {
         const response = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL, "", {}, {});
         const responseINR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=INR", "", {}, {});
         const responseEUR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=EUR", "", {},{});
-
+        response = JSON.stringify(response);
+        responseINR = JSON.stringify(responseINR);
+        responseEUR = JSON.stringify(responseEUR);    
         const coinMarketUSD = await this.parseExchangeData(JSON.parse(response), "USD");
         Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketUSD`, coinMarketUSD, "", httpConstants.LOG_LEVEL_TYPE.INFO);
         const coinMasterModelUSD = new CoinMasterModel(coinMarketUSD);
