@@ -9,9 +9,9 @@ export default class CoinMarketManager {
     async saveData() {
         const URL = `${Config.COIN_MARKET_API_URL_LATEST}?symbol=${Config.SYMBOL}&CMC_PRO_API_KEY=${Config.CMC_API_KEY}`;
 
-        const response = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL, "", {}, {});
-        const responseINR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=INR", "", {}, {});
-        const responseEUR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=EUR", "", {},{});
+        let response = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL, "", {}, {});
+        let responseINR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=INR", "", {}, {});
+        let responseEUR = await HttpService.executeHTTPRequest(httpConstants.METHOD_TYPE.GET, URL + "&convert=EUR", "", {},{});
         response = JSON.stringify(response);
         responseINR = JSON.stringify(responseINR);
         responseEUR = JSON.stringify(responseEUR);    
