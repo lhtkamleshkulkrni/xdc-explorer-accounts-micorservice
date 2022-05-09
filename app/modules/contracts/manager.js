@@ -400,7 +400,7 @@ export default class ContractManager {
     });
 
 
-    return { data, responseCount:data.length };
+    return { data, responseCount: data.length };
   }
 
   async someDaysHolders(req) {
@@ -510,7 +510,8 @@ export default class ContractManager {
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
     let holderTransactions;
-    if (req.body.sortKey && Object.keys(req.body.sortKey)[0] === "value") {
+    try {
+
       holderTransactions = await TransferTokenModel.aggregate([
         { $match: { $or: [{ from: address }, { to: address }] } },
         {
@@ -531,7 +532,7 @@ export default class ContractManager {
           $limit: limit
         }
       ])
-    } else {
+    } catch (err) {
 
       holderTransactions = await TransferTokenModel.find(queryStr, {
         hash: 1,
