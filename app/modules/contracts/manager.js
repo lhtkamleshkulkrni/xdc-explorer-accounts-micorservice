@@ -167,6 +167,7 @@ export default class ContractManager {
         tokenImage: 1,
         transfers: 1,
         description: 1,
+        totalSupplyCount:1
       },
       parseInt(req.skip),
       parseInt(req.limit),
