@@ -167,6 +167,7 @@ export default class ContractManager {
         tokenImage: 1,
         transfers: 1,
         description: 1,
+        totalSupplyCount:1
       },
       parseInt(req.skip),
       parseInt(req.limit),
@@ -336,12 +337,12 @@ export default class ContractManager {
     let findObj = {
       tokenContract: tokenAddress,
     };
-    let countFromHolder = await TransferTokenModel.distinct("from", {
-      contract: tokenAddress,
-    });
-    let countToHolder = await TransferTokenModel.distinct("to", {
-      contract: tokenAddress,
-    });
+    // let countFromHolder = await TransferTokenModel.distinct("from", {
+    //   contract: tokenAddress,
+    // });
+    // let countToHolder = await TransferTokenModel.distinct("to", {
+    //   contract: tokenAddress,
+    // });
     let response = await TokenHolderModel.getHolderList(
       findObj,
       {},
@@ -400,7 +401,7 @@ export default class ContractManager {
     });
 
 
-    return { data, responseCount: data.length };
+    return { data, responseCount };
   }
   async someDaysHolders(req) {
     Utils.lhtLog("ContractManager:someDaysHolders", "", "", "");

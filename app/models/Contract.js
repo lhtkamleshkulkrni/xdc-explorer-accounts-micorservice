@@ -25,6 +25,8 @@ const ContractSchema = new Schema({
   optimization: { type: Boolean, default: false },
   sourceCode: { type: String, default: "" },
   abi: { type: String, default: "" },
+  totalSupplyCount:{ type: Number, default: 0 },
+  decimalsCount:{ type: Number, default: 0 },
   website: { type: String, default: "" },
   twitter: { type: String, default: "" },
   telegram: { type: String, default: "" },
