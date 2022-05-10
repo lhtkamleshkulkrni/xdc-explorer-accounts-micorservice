@@ -515,7 +515,8 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
 
     let holderDetails = await TokenHolderModel.findOne({ address: address });
     let holderTransactions;
-    if (req.body.sortKey && Object.keys(req.body.sortKey)[0] === "value") {
+    try {
+
       holderTransactions = await TransferTokenModel.aggregate([
         { $match: { $or: [{ from: address }, { to: address }] } },
         {
@@ -536,7 +537,7 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
           $limit: limit
         }
       ])
-    } else {
+    } catch (err) {
 
       holderTransactions = await TransferTokenModel.find(queryStr, {
         hash: 1,
