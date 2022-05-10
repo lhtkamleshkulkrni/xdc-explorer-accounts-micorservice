@@ -360,25 +360,25 @@ export default class ContractManager {
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
     **/
 
-    if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
-      response.sort(function (a, b) {
-        return (
-          Number(b.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals)) -
-          Number(a.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals))
-        );
-      });
-    } else {
-      response.sort(function (a, b) {
-        return (
-          Number(a.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals)) -
-          Number(b.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals))
-        );
-      });
-    }
+    // if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
+    //   response.sort(function (a, b) {
+    //     return (
+    //       Number(b.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals)) -
+    //       Number(a.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals))
+    //     );
+    //   });
+    // } else {
+    //   response.sort(function (a, b) {
+    //     return (
+    //       Number(a.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals)) -
+    //       Number(b.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals))
+    //     );
+    //   });
+    // }
     let totalSupply = contractResponse.totalSupply
     const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
       // if (t.address == tokenAddress) {
