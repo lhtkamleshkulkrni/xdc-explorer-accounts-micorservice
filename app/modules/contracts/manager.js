@@ -167,6 +167,7 @@ export default class ContractManager {
         tokenImage: 1,
         transfers: 1,
         description: 1,
+        totalSupplyCount:1
       },
       parseInt(req.skip),
       parseInt(req.limit),
@@ -336,12 +337,12 @@ export default class ContractManager {
     let findObj = {
       tokenContract: tokenAddress,
     };
-    let countFromHolder = await TransferTokenModel.distinct("from", {
-      contract: tokenAddress,
-    });
-    let countToHolder = await TransferTokenModel.distinct("to", {
-      contract: tokenAddress,
-    });
+    // let countFromHolder = await TransferTokenModel.distinct("from", {
+    //   contract: tokenAddress,
+    // });
+    // let countToHolder = await TransferTokenModel.distinct("to", {
+    //   contract: tokenAddress,
+    // });
     let response = await TokenHolderModel.getHolderList(
       findObj,
       {},
@@ -359,25 +360,25 @@ export default class ContractManager {
          Percentage will be calculated on the basis of Quantity/Total supply for that token * 100
     **/
 
-    if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
-      response.sort(function (a, b) {
-        return (
-          Number(b.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals)) -
-          Number(a.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals))
-        );
-      });
-    } else {
-      response.sort(function (a, b) {
-        return (
-          Number(a.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals)) -
-          Number(b.balance) /
-          parseFloat(10 ** parseInt(contractResponse.decimals))
-        );
-      });
-    }
+    // if (!req.body.sortKey || req.body.sortKey["balance"] === -1) {
+    //   response.sort(function (a, b) {
+    //     return (
+    //       Number(b.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals)) -
+    //       Number(a.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals))
+    //     );
+    //   });
+    // } else {
+    //   response.sort(function (a, b) {
+    //     return (
+    //       Number(a.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals)) -
+    //       Number(b.balance) /
+    //       parseFloat(10 ** parseInt(contractResponse.decimals))
+    //     );
+    //   });
+    // }
     let totalSupply = contractResponse.totalSupply
     const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
       // if (t.address == tokenAddress) {
@@ -400,9 +401,8 @@ export default class ContractManager {
     });
 
 
-    return { data, responseCount: data.length };
+    return { data, responseCount };
   }
-
   async someDaysHolders(req) {
     Utils.lhtLog("ContractManager:someDaysHolders", "", "", "");
     let numberOfDays = Number(req.params.numberOfDays);
@@ -410,7 +410,7 @@ export default class ContractManager {
     let startTime = parseInt(
       moment().subtract(req.params.numberOfDays, "days").valueOf() / 1000
     );
-
+let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.params.address});
     let responseHolder = await TransferTokenModel.aggregate([
       {
         $match: {
@@ -441,6 +441,8 @@ export default class ContractManager {
           },
           uniqueCount1: { $addToSet: "$to" },
           uniqueCount2: { $addToSet: "$from" },
+          toAddresses:{$addToSet:"$to"},
+          fromAddresses:{$addToSet:"$from"},
           count: { $sum: 1 },
           date: {
             $first: {
@@ -458,6 +460,7 @@ export default class ContractManager {
           },
           toCount: { $size: "$uniqueCount1" },
           fromCount: { $size: "$uniqueCount2" },
+          addresses:{"$concatArrays":["$fromAddresses","$toAddresses"]},
           // total:      {$add:[Number("$toCount"),Number("$fromCount")]},
           count: 1,
           _id: 0,
@@ -468,9 +471,10 @@ export default class ContractManager {
     const resultArray = [];
     if (responseHolder.length > 0)
       responseHolder.map((item) => {
+    let count = [...new Set(item.addresses)].length;
         resultArray.push({
           date: item.date,
-          count: item.toCount + item.fromCount,
+          count: count > holdersCount ? holdersCount : count,
         });
       });
     else {
@@ -487,6 +491,7 @@ export default class ContractManager {
 
     return resultArray;
   }
+
 
   async getHolderDetailsUsingAddress(req) {
 
