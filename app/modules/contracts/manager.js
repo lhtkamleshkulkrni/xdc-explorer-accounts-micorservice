@@ -499,6 +499,8 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
     let result = [];
     let address = req.body.address;
     address = address.toLowerCase();
+    let tokenContract = req.body.tokenContract;
+    tokenContract = tokenContract.toLowerCase();
     let skip = parseInt(req.body.skip);
     let limit = parseInt(req.body.limit);
     let queryStr;
@@ -513,7 +515,7 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
       queryStr = { $or: [{ from: address }, { to: address }] };
     }
 
-    let holderDetails = await TokenHolderModel.findOne({ address: address });
+    let holderDetails = await TokenHolderModel.findOne({ $and: [{ address: address }, { tokenContract: tokenContract }] });
     let holderTransactions;
     try {
 
