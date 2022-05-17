@@ -167,7 +167,7 @@ export default class ContractManager {
         tokenImage: 1,
         transfers: 1,
         description: 1,
-        totalSupplyCount:1
+        totalSupplyCount: 1
       },
       parseInt(req.skip),
       parseInt(req.limit),
@@ -410,7 +410,7 @@ export default class ContractManager {
     let startTime = parseInt(
       moment().subtract(req.params.numberOfDays, "days").valueOf() / 1000
     );
-let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.params.address});
+    let holdersCount = await TokenHolderModel.countDocuments({ tokenContract: req.params.address });
     let responseHolder = await TransferTokenModel.aggregate([
       {
         $match: {
@@ -441,8 +441,8 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
           },
           uniqueCount1: { $addToSet: "$to" },
           uniqueCount2: { $addToSet: "$from" },
-          toAddresses:{$addToSet:"$to"},
-          fromAddresses:{$addToSet:"$from"},
+          toAddresses: { $addToSet: "$to" },
+          fromAddresses: { $addToSet: "$from" },
           count: { $sum: 1 },
           date: {
             $first: {
@@ -460,7 +460,7 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
           },
           toCount: { $size: "$uniqueCount1" },
           fromCount: { $size: "$uniqueCount2" },
-          addresses:{"$concatArrays":["$fromAddresses","$toAddresses"]},
+          addresses: { "$concatArrays": ["$fromAddresses", "$toAddresses"] },
           // total:      {$add:[Number("$toCount"),Number("$fromCount")]},
           count: 1,
           _id: 0,
@@ -471,7 +471,7 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
     const resultArray = [];
     if (responseHolder.length > 0)
       responseHolder.map((item) => {
-    let count = [...new Set(item.addresses)].length;
+        let count = [...new Set(item.addresses)].length;
         resultArray.push({
           date: item.date,
           count: count > holdersCount ? holdersCount : count,
@@ -517,30 +517,45 @@ let holdersCount = await TokenHolderModel.countDocuments({tokenContract:req.para
 
     let holderDetails = await TokenHolderModel.findOne({ $and: [{ address: address }, { tokenContract: tokenContract }] });
     let holderTransactions;
-    try {
-
-      holderTransactions = await TransferTokenModel.aggregate([
-        { $match: { $or: [{ from: address }, { to: address }] } },
-        {
-          $addFields: {
-            "MyStringValueSize": { $strLenCP: "$value" }
+    if (req.body.sortKey && Object.keys(req.body.sortKey)[0] === "value") {
+      try {
+        holderTransactions = await TransferTokenModel.aggregate([
+          { $match: { $or: [{ from: address }, { to: address }] } },
+          {
+            $addFields: {
+              "MyStringValueSize": { $strLenCP: "$value" }
+            }
+          },
+          {
+            $sort: {
+              "MyStringValueSize": req.body.sortKey.value ? req.body.sortKey.value : -1,
+              "value": req.body.sortKey.value ? req.body.sortKey.value : -1
+            }
+          },
+          {
+            $skip: skip
+          },
+          {
+            $limit: limit
           }
-        },
-        {
-          $sort: {
-            "MyStringValueSize": req.body.sortKey.value ? req.body.sortKey.value : -1,
-            "value": req.body.sortKey.value ? req.body.sortKey.value : -1
-          }
-        },
-        {
-          $skip: skip
-        },
-        {
-          $limit: limit
-        }
-      ])
-    } catch (err) {
+        ])
 
+      } catch (err) {
+
+
+        holderTransactions = await TransferTokenModel.find(queryStr, {
+          hash: 1,
+          timestamp: 1,
+          blockNumber: 1,
+          from: 1,
+          to: 1,
+          value: 1,
+        })
+          .skip(skip)
+          .limit(limit)
+          .sort(req.body.sortKey ? req.body.sortKey : { value: -1 });
+      }
+    } else {
       holderTransactions = await TransferTokenModel.find(queryStr, {
         hash: 1,
         timestamp: 1,
