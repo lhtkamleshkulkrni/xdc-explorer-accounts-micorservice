@@ -16,18 +16,18 @@ export default class CoinMarketManager {
         responseINR = JSON.stringify(responseINR);
         responseEUR = JSON.stringify(responseEUR);    
         const coinMarketUSD = await this.parseExchangeData(JSON.parse(response), "USD");
-        // Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketUSD`, coinMarketUSD, "", httpConstants.LOG_LEVEL_TYPE.INFO);
+        Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketUSD`, coinMarketUSD, "", httpConstants.LOG_LEVEL_TYPE.INFO);
         const coinMasterModelUSD = new CoinMasterModel(coinMarketUSD);
         await coinMasterModelUSD.saveData();
 
 
         const coinMarketEUR = await this.parseExchangeData(JSON.parse(responseEUR), "EUR");
-        // Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketEUR`, coinMarketEUR, "", httpConstants.LOG_LEVEL_TYPE.INFO);
+        Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketEUR`, coinMarketEUR, "", httpConstants.LOG_LEVEL_TYPE.INFO);
         const coinMasterModelEUR = new CoinMasterModel(coinMarketEUR);
         await coinMasterModelEUR.saveData();
 
         const coinMarketINR = await this.parseExchangeData(JSON.parse(responseINR), "INR");
-        // Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketINR`, coinMarketINR, "", httpConstants.LOG_LEVEL_TYPE.INFO);
+        Utils.lhtLog("CoinMarketManager", `CoinMarketManager:saveData coinMarketINR`, coinMarketINR, "", httpConstants.LOG_LEVEL_TYPE.INFO);
         const coinMasterModelINR = new CoinMasterModel(coinMarketINR);
         await coinMasterModelINR.saveData();
     }

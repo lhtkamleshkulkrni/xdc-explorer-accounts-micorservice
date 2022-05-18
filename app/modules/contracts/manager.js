@@ -44,12 +44,12 @@ export default class ContractManager {
       address: addressToken,
     });
     let tokenHolderTableResponse = [];
-    for (let index = 0; index < tokenHolderTableData.length; index++) {
+    for (let element of tokenHolderTableData) {
       let findObj = {
-        ERC: { $gte: 0 },
+        ERC: { $gt: 0 },
         $or: [
-          { address: tokenHolderTableData[index].tokenContract },
-          { owner: tokenHolderTableData[index].tokenContract },
+          { address: element.tokenContract },
+          { owner: element.tokenContract },
         ],
       };
       let dataResponseContract = await ContractModel.getContractList(
@@ -68,25 +68,23 @@ export default class ContractManager {
         1,
         ""
       );
-
-      //   let tokenImages = dataResponseContract[0] && dataResponseContract[0].tokenImage ? dataResponseContract[0].tokenImage :""
-      if (dataResponseContract && dataResponseContract.length > 0) {
-        let holderDetails = {
-          address: dataResponseContract[0].address,
-          holdersCount: dataResponseContract[0].holdersCount,
-          tokenName: dataResponseContract[0].tokenName,
-          symbol: dataResponseContract[0].symbol,
-          totalSupply: dataResponseContract[0].totalSupply,
-          decimals: dataResponseContract[0].decimals,
-          ERC: dataResponseContract[0].ERC,
-          tokenImage: dataResponseContract[0].tokenImage,
-          tokenContract: tokenHolderTableData[index].tokenContract,
-          balance: tokenHolderTableData[index].balance,
-        };
-        tokenHolderTableResponse.push(holderDetails);
-      } else {
+      if(!dataResponseContract || dataResponseContract.length == 0){
         continue;
       }
+      let holderDetails = {
+        address: dataResponseContract[0].address,
+        holdersCount: dataResponseContract[0].holdersCount,
+        tokenName: dataResponseContract[0].tokenName,
+        symbol: dataResponseContract[0].symbol,
+        totalSupply: dataResponseContract[0].totalSupply,
+        decimals: dataResponseContract[0].decimals,
+        ERC: dataResponseContract[0].ERC,
+        tokenImage: dataResponseContract[0].tokenImage,
+        tokenContract: element.tokenContract,
+        balance: element.balance,
+      };
+      tokenHolderTableResponse.push(holderDetails);
+      
     }
     if (tokenHolderTableData.length === 0) {
       let data = await ContractModel.getContractList(
