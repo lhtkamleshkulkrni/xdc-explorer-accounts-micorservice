@@ -388,7 +388,7 @@ export default class ContractManager {
       // }
       let percentage =
         (Number(t.balance) /
-          totalSupply) * 100
+          t.totalSupply) * 100
       percentage = percentage > 100 ? 100 : percentage
       let quantity =
         Number(t.balance) /
