@@ -381,15 +381,33 @@ export default class ContractManager {
     //     );
     //   });
     // }
-    let totalSupply = contractResponse.totalSupply
+    // let totalSupply = contractResponse.totalSupply
+    let reponseTotalSupply = await TokenHolderModel.getHolderList(
+      {
+        address: tokenAddress,
+      },
+      {},
+      parseInt(req.body.skip),
+      parseInt(req.body.limit),
+      req.body.sortKey ? req.body.sortKey : { balance: -1 }
+    );
     const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
       // if (t.address == tokenAddress) {
       //    return false ;
       // }
-      let percentage =
-        (Number(t.balance) /
-          totalSupply) * 100
-      percentage = percentage > 100 ? 100 : percentage
+      let percentage;
+      try {
+        percentage =
+          (Number(t.balance) /
+            reponseTotalSupply[0].totalSupply) * 100
+        percentage = percentage > 100 ? 100 : percentage
+      } catch (error) {
+
+        percentage =
+          (Number(t.balance) /
+            t.totalSupply) * 100
+        percentage = percentage > 100 ? 100 : percentage
+      }
       let quantity =
         Number(t.balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
