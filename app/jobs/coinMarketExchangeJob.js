@@ -18,7 +18,7 @@ module.exports = new CronMasterJob({
         cronTime: "*/30 * * * * *",
         onTick: async (job, done) => {
             Utils.lhtLog("cron jobs", "cron job running", {}, "", httpConstants.LOG_LEVEL_TYPE.INFO);
-            await CoinMarketController.saveData();
+            //  await CoinMarketController.saveData();
             done(null, "ok");
         },
     },

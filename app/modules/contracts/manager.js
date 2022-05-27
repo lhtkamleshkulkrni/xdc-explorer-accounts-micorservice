@@ -68,7 +68,7 @@ export default class ContractManager {
         1,
         ""
       );
-      if(!dataResponseContract || dataResponseContract.length == 0){
+      if (!dataResponseContract || dataResponseContract.length == 0) {
         continue;
       }
       let holderDetails = {
@@ -84,7 +84,7 @@ export default class ContractManager {
         balance: element.balance,
       };
       tokenHolderTableResponse.push(holderDetails);
-      
+
     }
     if (tokenHolderTableData.length === 0) {
       let data = await ContractModel.getContractList(
@@ -382,43 +382,39 @@ export default class ContractManager {
     //   });
     // }
     // let totalSupply = contractResponse.totalSupply
-    let reponseTotalSupply = await TokenHolderModel.getHolderList(
-      {
-        address: tokenAddress,
-      },
-      {},
-      parseInt(req.body.skip),
-      parseInt(req.body.limit),
-      req.body.sortKey ? req.body.sortKey : { balance: -1 }
-    );
-    const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
-      // if (t.address == tokenAddress) {
-      //    return false ;
-      // }
+
+    const filteredData = await response.filter((t) => { return t.address !== tokenAddress })
+    let data = []
+    for (let index = 0; index < filteredData.length; index++) {
+      let queryForTotalSupply = { $and: [{ tokenContract: tokenAddress }, { address: filteredData[index].address }] }
+      let reponseTotalSupply = await TokenHolderModel.findOne(
+        queryForTotalSupply
+      );
       let percentage;
       try {
         percentage =
-          (Number(t.balance) /
-            reponseTotalSupply[0].totalSupply) * 100
+          (Number(filteredData[index].balance) /
+            reponseTotalSupply._doc.totalSupply) * 100
         percentage = percentage > 100 ? 100 : percentage
       } catch (error) {
 
         percentage =
-          (Number(t.balance) /
-            t.totalSupply) * 100
+          (Number(filteredData[index].balance) /
+            filteredData[index].totalSupply) * 100
         percentage = percentage > 100 ? 100 : percentage
+
       }
       let quantity =
-        Number(t.balance) /
+        Number(filteredData[index].balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
-      return {
+      data.push({
         Rank: index + 1,
-        Address: t.address,
+        Address: filteredData[index].address,
         Quantity: quantity,
         Percentage: percentage,
-        Value: t.balance,
-      };
-    });
+        Value: filteredData[index].balance,
+      });
+    };
 
 
     return { data, responseCount };
