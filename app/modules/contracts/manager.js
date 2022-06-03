@@ -381,40 +381,26 @@ export default class ContractManager {
     //     );
     //   });
     // }
-    // let totalSupply = contractResponse.totalSupply
-
-    const filteredData = await response.filter((t) => { return t.address !== tokenAddress })
-    let data = []
-    for (let index = 0; index < filteredData.length; index++) {
-      let queryForTotalSupply = { $and: [{ tokenContract: tokenAddress }, { address: filteredData[index].address }] }
-      let reponseTotalSupply = await TokenHolderModel.findOne(
-        queryForTotalSupply
-      );
-      let percentage;
-      try {
-        percentage =
-          (Number(filteredData[index].balance) /
-            reponseTotalSupply._doc.totalSupply) * 100
-        percentage = percentage > 100 ? 100 : percentage
-      } catch (error) {
-
-        percentage =
-          (Number(filteredData[index].balance) /
-            filteredData[index].totalSupply) * 100
-        percentage = percentage > 100 ? 100 : percentage
-
-      }
+    let totalSupply = contractResponse.totalSupply
+    const data = response.filter((t) => { return (t.address !== tokenAddress ? true : false) }).map(function (t, index) {
+      // if (t.address == tokenAddress) {
+      //    return false ;
+      // }
+      let percentage =
+        (Number(t.balance) /
+          totalSupply) * 100
+      percentage = percentage > 100 ? 100 : percentage
       let quantity =
-        Number(filteredData[index].balance) /
+        Number(t.balance) /
         parseFloat(10 ** parseInt(contractResponse.decimals));
-      data.push({
+      return {
         Rank: index + 1,
-        Address: filteredData[index].address,
+        Address: t.address,
         Quantity: quantity,
         Percentage: percentage,
-        Value: filteredData[index].balance,
-      });
-    };
+        Value: t.balance,
+      };
+    });
 
 
     return { data, responseCount };
